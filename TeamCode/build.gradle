@@ -14,15 +14,31 @@
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    compileSdk 36
+
+    defaultConfig {
+        minSdk 24
+    }
+
     packagingOptions {
+        jniLibs {
+            pickFirsts += ['**/*.so']
+        }
         jniLibs.useLegacyPackaging true
     }
 }
 
 dependencies {
     implementation project(':FtcRobotController')
+    implementation 'com.android.support:animated-vector-drawable:28.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
 }
