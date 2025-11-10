@@ -3,19 +3,39 @@ package org.firstinspires.ftc.teamcode.teleops;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.hardware.CRServoImplEx;
+import com.qualcomm.robotcore.hardware.configuration.WebcamConfiguration;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 
 @TeleOp
 public class BevelCentricMecanumTeleop extends LinearOpMode {
     @Override
+
+
     public void runOpMode() throws InterruptedException {
-        DcMotor frontLeftMotor = hardwareMap.dcMotor.get("fL");
-        DcMotor backLeftMotor = hardwareMap.dcMotor.get("bL");
-        DcMotor frontRightMotor = hardwareMap.dcMotor.get("fR");
-        DcMotor backRightMotor = hardwareMap.dcMotor.get("bR");
+        DcMotorEx frontLeftMotor = hardwareMap.get(DcMotorEx.class, "fL"); // 0 CHUB
+        DcMotorEx backLeftMotor = hardwareMap.get(DcMotorEx.class, "bL"); // 2 CHUB
+        DcMotorEx frontRightMotor = hardwareMap.get(DcMotorEx.class, "fR");; //1 CHUB
+        DcMotorEx backRightMotor = hardwareMap.get(DcMotorEx.class, "bL"); //3 CHUB
+
+        DcMotorEx flyWheel = hardwareMap.get(DcMotorEx.class, "fly");
+        DcMotorEx intake = hardwareMap.get(DcMotorEx.class, "it");
+        DcMotorEx turret = hardwareMap.get(DcMotorEx.class, "turret");
+        Spindex spindex = new Spindex(hardwareMap);
+
+
+         //1 CHUB
+        CRServoImplEx kicker = hardwareMap.get(CRServoImplEx.class, "kicker"); //1 CHUB
+        CRServoImplEx hood = hardwareMap.get(CRServoImplEx.class, "hood"); // 5 CHUB
 
         // Adjust motor directions for bevel drive layout
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -26,7 +46,7 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
         IMU imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
+                RevHubOrientationOnRobot.UsbFacingDirection.RIGHT));
         imu.initialize(parameters);
 
         waitForStart();
@@ -38,8 +58,66 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
             double y = gamepad1.left_stick_y;     // correct already
             double x = -gamepad1.left_stick_x;    // flip strafe (left/right)
             double rx = -gamepad1.right_stick_x;  // flip rotation
+            double flyPower = -0.85*gamepad2.left_stick_y; // flywheel control
+            double turretPower = turret.getPower();
 
             if (gamepad1.options) imu.resetYaw();
+
+            if (gamepad1.dpad_right) {
+                turret.setPower(.4);
+            } else if (gamepad1.dpad_left) {
+                turret.setPower(-.4);
+            } else {
+                turret.setPower(0);
+            }
+
+//            if (gamepad2.x) {
+//                spindex.setPowew(0.275);
+//                sleep(343);
+//            } else if (gamepad2.y) {
+//                spindex.setPower(0.275);
+//                sleep(167);
+//            } else {
+//                spindex.setPower(0);
+//            }
+
+            if (gamepad1.dpad_up) {
+                hood.setPower(0.5);
+            } else if (gamepad1.dpad_down) {
+                hood.setPower(-0.5);
+            } else {
+                hood.setPower(0);
+            }
+
+            if (gamepad1.right_trigger != 0) {
+                intake.setPower(1);
+            } else if (gamepad1.left_trigger != 0) {
+                intake.setPower(-1);
+            } else {
+                intake.setPower(0.6);
+            }
+
+//            if (gamepad2.right_bumper) {
+//                spindex.setPower(0.15);
+//
+//            } else if (gamepad2.left_bumper) {
+//                spindex.setPower(-0.15);
+//            } else {
+//                spindex.setPower(0);
+//            }
+
+            if (gamepad2.a) {
+                kicker.setPower(1);
+            } else if (gamepad2.b) {
+                kicker.setPower(-0.5);
+            } else {
+                kicker.setPower(0);
+            }
+
+
+
+
+
 
             double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
@@ -60,9 +138,14 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
             frontRightMotor.setPower(frontRightPower);
             backRightMotor.setPower(backRightPower);
 
+            flyWheel.setPower(flyPower);
+
+
+
             telemetry.addData("Heading (deg)", Math.toDegrees(botHeading));
             telemetry.addData("Strafe X", x);
             telemetry.addData("Rotation RX", rx);
+            telemetry.addData("Turret thingies", turretPower);
             telemetry.update();
         }
     }
