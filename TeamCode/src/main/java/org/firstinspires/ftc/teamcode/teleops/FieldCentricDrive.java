@@ -14,13 +14,14 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.commands.DriveCommand;
 import org.firstinspires.ftc.teamcode.subsystems.DriveSubsystemFC;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 
 
 @TeleOp(name = "Field Centric Drive FTCLib")
 
 public class FieldCentricDrive extends CommandOpMode {
-    private PIDController testPID = new PIDController(0.8, 0.1, 0.1);
+
 
     private Motor fL, fR, bL, bR;
 
@@ -36,12 +37,15 @@ public class FieldCentricDrive extends CommandOpMode {
 
     private Spindex spindex;
 
+    private Intake intake;
+
     @Override
     public void initialize() {
 
 
 
         spindex = new Spindex(hardwareMap);
+        intake = new Intake(hardwareMap);
 
         fL = new Motor(hardwareMap, "fL");
         fR = new Motor(hardwareMap, "fR");
@@ -57,7 +61,7 @@ public class FieldCentricDrive extends CommandOpMode {
 
         bL.motor.setDirection(DcMotorSimple.Direction.FORWARD);
         fR.motor.setDirection(DcMotorSimple.Direction.REVERSE);
-        fL.motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        fL.motor.setDirection(DcMotorSimple.Direction.FORWARD);
         bR.motor.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
@@ -76,8 +80,11 @@ public class FieldCentricDrive extends CommandOpMode {
         driverPad = new GamepadEx(gamepad1);
         gunnerPad = new GamepadEx(gamepad2);
 
-        driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() ->
-                spindex.nextPos()
+        driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
+                    spindex.nextPos();
+                            intake.cycle();
+                }
+
         );
 
 
@@ -91,6 +98,7 @@ public class FieldCentricDrive extends CommandOpMode {
 
         register(driveS);
         register(spindex);
+        register(intake);
         driveS.setDefaultCommand(driveC);
 
 

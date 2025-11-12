@@ -32,12 +32,12 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
         DcMotorEx turret = hardwareMap.get(DcMotorEx.class, "turret");
         Spindex spindex = new Spindex(hardwareMap);
 
-
          //1 CHUB
-        CRServoImplEx kicker = hardwareMap.get(CRServoImplEx.class, "kicker"); //1 CHUB
-        CRServoImplEx hood = hardwareMap.get(CRServoImplEx.class, "hood"); // 5 CHUB
+        //CRServoImplEx kicker = hardwareMap.get(CRServoImplEx.class, "kicker"); //1 CHUB
+        //CRServoImplEx hood = hardwareMap.get(CRServoImplEx.class, "hood"); // 5 CHUB
 
         // Adjust motor directions for bevel drive layout
+        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         backRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -81,13 +81,13 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
 //                spindex.setPower(0);
 //            }
 
-            if (gamepad1.dpad_up) {
-                hood.setPower(0.5);
-            } else if (gamepad1.dpad_down) {
-                hood.setPower(-0.5);
-            } else {
-                hood.setPower(0);
-            }
+//            if (gamepad1.dpad_up) {
+//                hood.setPower(0.5);
+//            } else if (gamepad1.dpad_down) {
+//                hood.setPower(-0.5);
+//            } else {
+//                hood.setPower(0);
+//            }
 
             if (gamepad1.right_trigger != 0) {
                 intake.setPower(1);
@@ -106,13 +106,13 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
 //                spindex.setPower(0);
 //            }
 
-            if (gamepad2.a) {
-                kicker.setPower(1);
-            } else if (gamepad2.b) {
-                kicker.setPower(-0.5);
-            } else {
-                kicker.setPower(0);
-            }
+//            if (gamepad2.a) {
+//                kicker.setPower(1);
+//            } else if (gamepad2.b) {
+//                kicker.setPower(-0.5);
+//            } else {
+//                kicker.setPower(0);
+//            }
 
 
 
@@ -134,13 +134,11 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
             double backRightPower = (rotY + rotX - rx) / denominator;
 
             frontLeftMotor.setPower(frontLeftPower);
-            backLeftMotor.setPower(backLeftPower);
+            backLeftMotor.setPower(-backLeftPower);
             frontRightMotor.setPower(frontRightPower);
-            backRightMotor.setPower(backRightPower);
+            backRightMotor.setPower(-backRightPower);
 
             flyWheel.setPower(flyPower);
-
-
 
             telemetry.addData("Heading (deg)", Math.toDegrees(botHeading));
             telemetry.addData("Strafe X", x);
