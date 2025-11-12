@@ -156,7 +156,7 @@ public class Spindex extends SubsystemBase {
 
     }
 
-    private PIDController spindexPID = new PIDController(0.0002, 0.0001, 0.0);
+    private PIDController spindexPID = new PIDController(0.0003, 0.000, 0.0);
 
     /** Move to a specific slot index (0–5) */
     public void goToIndex(int index) {

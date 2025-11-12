@@ -24,7 +24,7 @@ public class PIDFTest extends LinearOpMode {
     // kP = 0
     // kI = 0
     // kD = 0
-    private PIDController testPID = new PIDController(0.0003, 0.0001, 0.0);
+    private PIDController testPID = new PIDController(0.0003, 0.0000, 0.0);
 
     @Override
 public void runOpMode() {

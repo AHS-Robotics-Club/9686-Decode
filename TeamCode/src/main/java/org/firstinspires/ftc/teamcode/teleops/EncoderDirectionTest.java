@@ -53,7 +53,7 @@ public void runOpMode() {
 
             // Sets the slide motor power according to the PIDF output.
 
-            telemetry.addData("Spindex Encoder", position);
+        telemetry.addData("Spindex Encoder", position);
 
 
         telemetry.update();
