@@ -37,11 +37,10 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
         //CRServoImplEx hood = hardwareMap.get(CRServoImplEx.class, "hood"); // 5 CHUB
 
         // Adjust motor directions for bevel drive layout
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        backRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-
+        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+                backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+                frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+                backRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         // IMU setup
         IMU imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -133,10 +132,10 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
             double frontRightPower = (rotY - rotX - rx) / denominator;
             double backRightPower = (rotY + rotX - rx) / denominator;
 
-            frontLeftMotor.setPower(frontLeftPower);
-            backLeftMotor.setPower(-backLeftPower);
-            frontRightMotor.setPower(frontRightPower);
-            backRightMotor.setPower(-backRightPower);
+            frontLeftMotor.setPower(0.6* frontLeftPower);
+            backLeftMotor.setPower(0.6 * -backLeftPower);
+            frontRightMotor.setPower(0.6* frontRightPower);
+            backRightMotor.setPower(0.6 * -backRightPower);
 
             flyWheel.setPower(flyPower);
 

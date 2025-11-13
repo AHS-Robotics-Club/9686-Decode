@@ -26,13 +26,11 @@ public class FieldCentricDrive extends CommandOpMode {
     private Motor fL, fR, bL, bR;
 
 
-
     private DriveCommand driveC;
     private DriveSubsystemFC driveS;
     private GamepadEx driverPad, gunnerPad;
 
     private int targetPosition = 1365;
-
 
 
     private Spindex spindex;
@@ -41,7 +39,6 @@ public class FieldCentricDrive extends CommandOpMode {
 
     @Override
     public void initialize() {
-
 
 
         spindex = new Spindex(hardwareMap);
@@ -59,13 +56,10 @@ public class FieldCentricDrive extends CommandOpMode {
         bR.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
-        bL.motor.setDirection(DcMotorSimple.Direction.FORWARD);
-        fR.motor.setDirection(DcMotorSimple.Direction.REVERSE);
-        fL.motor.setDirection(DcMotorSimple.Direction.FORWARD);
-        bR.motor.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
-
+        fL.motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        bL.motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        fR.motor.setDirection(DcMotorSimple.Direction.FORWARD);
+        bR.motor.setDirection(DcMotorSimple.Direction.FORWARD);
 
         IMU imu = hardwareMap.get(IMU.class, "imu");
 
@@ -81,19 +75,15 @@ public class FieldCentricDrive extends CommandOpMode {
         gunnerPad = new GamepadEx(gamepad2);
 
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
-            spindex.nextPos();
-            intake.cycle();
-            }
+                    spindex.nextPos();
+                    intake.cycle();
+                }
 
         );
 
 
-
-
-
-        driveS = new DriveSubsystemFC(fL, fR, bL, bR, imu, 0.9);
+        driveS = new DriveSubsystemFC(fL, fR, bL, bR, imu, 1);
         driveC = new DriveCommand(driveS, driverPad::getLeftY, driverPad::getLeftX, driverPad::getRightX, 0.9);
-
 
 
         register(driveS);
@@ -102,26 +92,12 @@ public class FieldCentricDrive extends CommandOpMode {
         driveS.setDefaultCommand(driveC);
 
 
-
-
         telemetry.addData("Spindex Encoder", spindex.getCurrentPos());
-       // telemetry.addData("Motor Power", spindex.getMotorPwr());
+        // telemetry.addData("Motor Power", spindex.getMotorPwr());
         telemetry.update();
 
 
-
-
-
-
-
     }
 
 
-    public int getTargetPosition() {
-        return targetPosition;
-    }
-
-    public void setTargetPosition(int targetPosition) {
-        this.targetPosition = targetPosition;
-    }
 }

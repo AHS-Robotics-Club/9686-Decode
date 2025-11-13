@@ -210,6 +210,8 @@ public class Spindex extends SubsystemBase {
 
 
 
+
+
     }
 
     public void manual(double power) {
