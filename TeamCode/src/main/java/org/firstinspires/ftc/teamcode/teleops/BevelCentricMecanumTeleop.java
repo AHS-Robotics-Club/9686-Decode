@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.configuration.WebcamConfiguration;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 
 @TeleOp
@@ -33,9 +34,8 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
         Spindex spindex = new Spindex(hardwareMap);
 
          //1 CHUB
-        //CRServoImplEx kicker = hardwareMap.get(CRServoImplEx.class, "kicker"); //1 CHUB
-        //CRServoImplEx hood = hardwareMap.get(CRServoImplEx.class, "hood"); // 5 CHUB
-
+        // CRServoImplEx hood = hardwareMap.get(CRServoImplEx.class, "hood"); // 5 CHUB
+           ServoImplEx kicker = hardwareMap.get(ServoImplEx.class, "kicker");
         // Adjust motor directions for bevel drive layout
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
                 backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -96,22 +96,19 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
                 intake.setPower(0.6);
             }
 
-//            if (gamepad2.right_bumper) {
-//                spindex.setPower(0.15);
-//
-//            } else if (gamepad2.left_bumper) {
-//                spindex.setPower(-0.15);
-//            } else {
-//                spindex.setPower(0);
-//            }
+            if (gamepad2.right_bumper) {
+                spindex.nextIndex();
+            } else if (gamepad2.left_bumper) {
+                spindex.previousIndex();
+            } else {
+                spindex.stop();
+            }
 
-//            if (gamepad2.a) {
-//                kicker.setPower(1);
-//            } else if (gamepad2.b) {
-//                kicker.setPower(-0.5);
-//            } else {
-//                kicker.setPower(0);
-//            }
+            if (gamepad2.a) {
+                kicker.setPosition(1);
+            } else {
+                kicker.setPosition(0);
+            }
 
 
 

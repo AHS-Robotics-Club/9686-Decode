@@ -75,7 +75,7 @@ public class FieldCentricDrive extends CommandOpMode {
         gunnerPad = new GamepadEx(gamepad2);
 
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
-                    spindex.nextPos();
+                    spindex.nextIndex();
                     intake.cycle();
                 }
 
