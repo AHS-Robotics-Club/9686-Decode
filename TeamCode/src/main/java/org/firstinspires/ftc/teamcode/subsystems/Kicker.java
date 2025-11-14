@@ -22,20 +22,13 @@ public class Kicker {
 
 
             kicker.setPosition(1);
-            kickTimer.reset();
 
 
 
+    }
 
-            if (kickTimer.milliseconds() > 200) {
-                kicker.setPosition(-1);
-            }
-
-            if (kickTimer.milliseconds() > 400) {
-                kicker.setPosition(0);
-                isKicking = false;
-            }
-
+    public void down() {
+        kicker.setPosition(0);
     }
 
 

@@ -16,6 +16,7 @@ public class Spindex extends SubsystemBase {
 
     // 1/6 rotation step for manual PID stepping
     private static final double COUNTS_PER_SLOT = COUNTS_PER_REV / 6.0;
+    private static final double BIGCOUNTS_PER_SLOT = COUNTS_PER_REV / 3;
 
     // The actual six slot encoder positions
     private final int[] positions = {
@@ -75,6 +76,11 @@ public class Spindex extends SubsystemBase {
 
     public void stepForward() {
         pidTarget = spindexMtr.getCurrentPosition() + (int)COUNTS_PER_SLOT;
+        spindexMtr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void bigStepForward() {
+        pidTarget = spindexMtr.getCurrentPosition() + (int)BIGCOUNTS_PER_SLOT;
         spindexMtr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
