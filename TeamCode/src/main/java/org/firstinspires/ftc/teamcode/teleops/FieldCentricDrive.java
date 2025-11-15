@@ -106,26 +106,17 @@ public class FieldCentricDrive extends CommandOpMode {
 
         );
 
-        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(() ->
-                turret.spinLeft()
+        if (gamepad1.dpad_right) {
+            turret.spinRight();
+        } else if (gamepad1.dpad_left) {
+            turret.spinLeft();
+        } else turret.stop();
 
-
-                );
-
-        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(() ->
-                turret.spinRight()
-
-
-        );
-
-
-        gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() ->
-                kicker.kick()
-        );
-
-        gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenReleased(() ->
-                kicker.down()
-        );
+        if (gamepad1.a) {
+            kicker.kick();
+        } else {
+            kicker.down();
+        }
 
 
         driveS = new DriveSubsystemFC(fL, fR, bL, bR, imu, 1);
@@ -140,17 +131,17 @@ public class FieldCentricDrive extends CommandOpMode {
 
 
         LLResult result = limelight.getLatestResult();
-        if (result != null && result.isValid()) {
-            Pose3D botpose = result.getBotpose();
-            telemetry.addData("tx", result.getTx());
-            telemetry.addData("ty", result.getTy());
-            telemetry.addData("Botpose", botpose.toString());
-            telemetry.update();
-        }
+
+        Pose3D botpose = result.getBotpose();
+
+
 
 
         telemetry.addData("Spindex Encoder", spindex.getCurrentPos());
         telemetry.addData("Target Spindex Position", spindex.getPidTarget());
+        telemetry.addData("tx", result.getTx());
+        telemetry.addData("ty", result.getTy());
+        telemetry.addData("Botpose", botpose.toString());
         // telemetry.addData("Motor Power", spindex.getMotorPwr());
         telemetry.update();
 

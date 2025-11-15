@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -32,7 +33,7 @@ public class Spindex extends SubsystemBase {
     private int currentIndex = 0;
 
     // PID for manual fine movement
-    private PIDController spindexPID = new PIDController(0.0003, 0.0, 0.0);
+    private PIDController spindexPID = new PIDController(0.00046, 0.00000, 0.00000);
     private int pidTarget = 0;
 
     public Spindex(HardwareMap hardwareMap) {
@@ -43,7 +44,7 @@ public class Spindex extends SubsystemBase {
         spindexMtr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Keep forward direction predictable
-        spindexMtr.setDirection(DcMotorSimple.Direction.FORWARD);
+        spindexMtr.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     // -------------------------
@@ -75,13 +76,13 @@ public class Spindex extends SubsystemBase {
     // -------------------------
 
     public void stepForward() {
-        pidTarget = spindexMtr.getCurrentPosition() + (int)COUNTS_PER_SLOT;
-        spindexMtr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        pidTarget = -spindexMtr.getCurrentPosition() + (int)COUNTS_PER_SLOT;
+
     }
 
     public void bigStepForward() {
-        pidTarget = spindexMtr.getCurrentPosition() + (int)BIGCOUNTS_PER_SLOT;
-        spindexMtr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        pidTarget = -spindexMtr.getCurrentPosition() + (int)BIGCOUNTS_PER_SLOT;
+
     }
 
     public void stepBackward() {
@@ -91,11 +92,11 @@ public class Spindex extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (spindexMtr.getMode() == DcMotor.RunMode.RUN_WITHOUT_ENCODER) {
-            double current = spindexMtr.getCurrentPosition();
+
+            double current = -spindexMtr.getCurrentPosition();
             double power = spindexPID.calculate(current, pidTarget);
             spindexMtr.setPower(power);
-        }
+
     }
 
     // -------------------------

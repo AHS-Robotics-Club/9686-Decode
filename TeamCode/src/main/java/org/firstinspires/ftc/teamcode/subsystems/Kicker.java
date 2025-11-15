@@ -19,12 +19,7 @@ public class Kicker {
     }
 
     public void kick() {
-
-
             kicker.setPosition(1);
-
-
-
     }
 
     public void down() {

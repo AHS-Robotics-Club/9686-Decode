@@ -14,7 +14,7 @@ public class Turret extends SubsystemBase {
 
     public Turret (HardwareMap hardwareMap) {
 
-        turret = hardwareMap.get(DcMotorEx.class, "spindex");
+        turret = hardwareMap.get(DcMotorEx.class, "turret");
 
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -39,6 +39,14 @@ public class Turret extends SubsystemBase {
     public void spinLeft() {
 
         turret.setPower(-0.5);
+
+
+
+    }
+
+    public void stop() {
+
+        turret.setPower(0);
 
 
 
