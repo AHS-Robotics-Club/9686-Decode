@@ -21,7 +21,7 @@ public class Flywheel extends SubsystemBase {
 
     public void periodic() {
 
-        flywheel.setPower(-0.4);
+        flywheel.setPower(-0.2);
 
 
     }
