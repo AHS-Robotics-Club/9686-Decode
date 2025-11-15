@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
-@TeleOp(name="Test Op Mode")
+@TeleOp(name="Nice Test Op Mode")
 public class RazamOpMode extends CommandOpMode {
     private GamepadEx driverPad, gunnerPad;
 
@@ -74,6 +74,8 @@ public class RazamOpMode extends CommandOpMode {
         gunnerPad = new GamepadEx(gamepad2);
 
 
+
+
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
                     spindex.stepForward();
                     intake.cycle();
@@ -106,6 +108,10 @@ public class RazamOpMode extends CommandOpMode {
     @Override
     public void run() {
         super.run();
+
+        double flypwr = gamepad2.left_stick_y * -0.85;
+        flywheel.manual(flypwr);
+
         LLResult result = limelight.getLatestResult();
 
         Pose3D botpose = result.getBotpose();
@@ -113,9 +119,7 @@ public class RazamOpMode extends CommandOpMode {
         follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, false);
         follower.update();
 
-        double flypwr = gamepad1.left_stick_y * -0.85;
 
-        flywheel.manual(flypwr);
 
         if (gamepad1.dpad_right) {
             turret.spinRight();

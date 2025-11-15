@@ -100,7 +100,7 @@ public class RedAuton extends OpMode { // Renamed the class
                 // State 1: Wait for the path to complete
                 if (!follower.isBusy()) {
                     // Path is finished, so we run our action
-                    flywheel.setPower(-0.85);
+                    flywheel.manual(-0.85);
                     kicker.kick();
                     kicker.down();
                     spindex.bigStepForward();

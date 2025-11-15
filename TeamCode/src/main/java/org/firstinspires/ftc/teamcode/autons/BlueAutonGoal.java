@@ -98,7 +98,7 @@ public class BlueAutonGoal extends OpMode {
                 // State 1: Wait for the path to complete
                 if (!follower.isBusy()) {
                     // Path is finished, so we run our action
-                    flywheel.setPower(-0.85);
+                    flywheel.manual(-0.85);
                     kicker.kick();
                     spindex.bigStepForward();
 
