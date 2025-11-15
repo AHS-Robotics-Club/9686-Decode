@@ -26,7 +26,9 @@ public class Flywheel extends SubsystemBase {
 
     }
 
-
+    public void setPower(double n){
+        flywheel.setPower(n);
+    }
     public void manual (double power) {
 
         flywheel.setPower(power);

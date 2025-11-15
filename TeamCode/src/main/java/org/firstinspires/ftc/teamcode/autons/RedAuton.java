@@ -12,23 +12,21 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-
-//Importing the appropiate subystems
+// Import the Kicker subsystem
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
-// This import line was incomplete in your original code, you might need to fix it
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 
-
-@Autonomous(name = "red thingyyy", group = "Autonomous")
+@Autonomous(name = "Red Auton", group = "Autonomous") // Renamed the OpMode
 @Configurable // Panels
-public class BlueAutonGoal extends OpMode {
+public class RedAuton extends OpMode { // Renamed the class
 
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
     private int pathState; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
 
+    // Declare the Kicker subsystem
     private Kicker kicker;
     private Flywheel flywheel;
 
@@ -39,10 +37,13 @@ public class BlueAutonGoal extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         follower = Constants.createFollower(hardwareMap);
+        // Note: You may want to change this starting pose for the Red alliance
         follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
 
-        paths = new Paths(follower);
-        kicker = new Kicker(hardwareMap);// Build paths
+        paths = new Paths(follower); // Build paths
+
+        // Initialize the Kicker subsystem
+        kicker = new Kicker(hardwareMap);
         flywheel = new Flywheel(hardwareMap);
         spindex = new Spindex(hardwareMap);
 
@@ -73,9 +74,10 @@ public class BlueAutonGoal extends OpMode {
             Path1 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(14.983, 127.145), new Pose(71.168, 72.624))
+                            // Note: You may want to change these coordinates for the Red alliance
+                            new BezierLine(new Pose(123.607, 122.358), new Pose(72.000, 71.792))
                     )
-                    .setTangentHeadingInterpolation()
+                    .setConstantHeadingInterpolation(Math.toRadians(36))
                     .setReversed()
                     .build();
         }
@@ -100,7 +102,9 @@ public class BlueAutonGoal extends OpMode {
                     // Path is finished, so we run our action
                     flywheel.setPower(-0.85);
                     kicker.kick();
+                    kicker.down();
                     spindex.bigStepForward();
+
 
                     // Move to state 2 (the "done" state)
                     return 2;
