@@ -33,7 +33,7 @@ public class Spindex extends SubsystemBase {
     private int currentIndex = 0;
 
     // PID for manual fine movement
-    private PIDController spindexPID = new PIDController(0.00046, 0.00000, 0.00000);
+    private PIDController spindexPID = new PIDController(0.00046, 0.0000001, 0.00000);
     private int pidTarget = 0;
 
     public Spindex(HardwareMap hardwareMap) {

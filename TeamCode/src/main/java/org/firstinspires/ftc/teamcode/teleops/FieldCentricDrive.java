@@ -17,13 +17,14 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.commands.DriveCommand;
 import org.firstinspires.ftc.teamcode.subsystems.DriveSubsystemFC;
+import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 
-@TeleOp(name = "Field Centric Drive FTCLib")
+@TeleOp(name = "Field Centric Drive FTCLib / Srihaasa is my Dog")
 
 public class FieldCentricDrive extends CommandOpMode {
 
@@ -45,6 +46,8 @@ public class FieldCentricDrive extends CommandOpMode {
     private Intake intake;
     private Turret turret;
 
+    private Flywheel flywheel;
+
     private Limelight3A limelight;
 
     @Override
@@ -61,6 +64,7 @@ public class FieldCentricDrive extends CommandOpMode {
         intake = new Intake(hardwareMap);
         kicker = new Kicker(hardwareMap);
         turret = new Turret(hardwareMap);
+        flywheel = new Flywheel(hardwareMap);
 
         fL = new Motor(hardwareMap, "fL");
         fR = new Motor(hardwareMap, "fR");
@@ -91,6 +95,10 @@ public class FieldCentricDrive extends CommandOpMode {
 
         driverPad = new GamepadEx(gamepad1);
         gunnerPad = new GamepadEx(gamepad2);
+
+        double flypwr = -0.85 * gunnerPad.getLeftY();
+
+
 
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
                     spindex.stepForward();
@@ -127,6 +135,7 @@ public class FieldCentricDrive extends CommandOpMode {
         register(spindex);
         register(intake);
         register(turret);
+        register(flywheel);
         driveS.setDefaultCommand(driveC);
 
 
