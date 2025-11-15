@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
-@TeleOp(name="Moulik Op Mode")
+@TeleOp(name="Moulik is Hella Gay")
 public class MoulikOpMode extends CommandOpMode {
     private GamepadEx driverPad, gunnerPad;
 

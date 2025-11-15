@@ -16,6 +16,11 @@ public class Kicker extends SubsystemBase {
         this.kicker = hardwareMap.get(ServoImplEx.class, "kicker"); //Expansion 5
     }
 
+    @Override
+    public void periodic() {
+        kicker.setPosition(kicker.getPosition());
+    }
+
     public void kick() {
         kicker.setPosition(1);
     }

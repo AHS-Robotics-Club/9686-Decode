@@ -88,13 +88,19 @@ public class RazamOpMode extends CommandOpMode {
 
         );
 
+        gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
+            kicker.kick();
+        });
+        gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(() -> {
+            kicker.down();
+        });
+
         register(flywheel);
         register(spindex);
         register(intake);
         register(turret);
         register(hood);
         register(kicker);
-        run();
     }
 
     @Override
@@ -107,7 +113,7 @@ public class RazamOpMode extends CommandOpMode {
         follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, false);
         follower.update();
 
-        double flypwr = Math.min(-0.2, gamepad1.left_stick_y * -0.85);
+        double flypwr = gamepad1.left_stick_y * -0.85;
 
         flywheel.manual(flypwr);
 
