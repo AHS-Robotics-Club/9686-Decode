@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.configuration.WebcamConfiguration;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 
 @TeleOp
@@ -33,15 +34,13 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
         Spindex spindex = new Spindex(hardwareMap);
 
          //1 CHUB
-        CRServoImplEx kicker = hardwareMap.get(CRServoImplEx.class, "kicker"); //1 CHUB
-        //CRServoImplEx hood = hardwareMap.get(CRServoImplEx.class, "hood"); // 5 CHUB
-
+        // CRServoImplEx hood = hardwareMap.get(CRServoImplEx.class, "hood"); // 5 CHUB
+           ServoImplEx kicker = hardwareMap.get(ServoImplEx.class, "kicker");
         // Adjust motor directions for bevel drive layout
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        backRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-
+        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+                backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+                frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+                backRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         // IMU setup
         IMU imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -97,21 +96,18 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
                 intake.setPower(0.6);
             }
 
-//            if (gamepad2.right_bumper) {
-//                spindex.setPower(0.15);
-//
-//            } else if (gamepad2.left_bumper) {
-//                spindex.setPower(-0.15);
-//            } else {
-//                spindex.setPower(0);
-//            }
+            if (gamepad2.right_bumper) {
+                spindex.nextIndex();
+            } else if (gamepad2.left_bumper) {
+                spindex.previousIndex();
+            } else {
+                spindex.stop();
+            }
 
             if (gamepad2.a) {
-                kicker.setPower(1);
-            } else if (gamepad2.b) {
-                kicker.setPower(-0.5);
+                kicker.setPosition(1);
             } else {
-                kicker.setPower(0);
+                kicker.setPosition(0);
             }
 
 
@@ -133,10 +129,10 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
             double frontRightPower = (rotY - rotX - rx) / denominator;
             double backRightPower = (rotY + rotX - rx) / denominator;
 
-            frontLeftMotor.setPower(frontLeftPower);
-            backLeftMotor.setPower(-backLeftPower);
-            frontRightMotor.setPower(frontRightPower);
-            backRightMotor.setPower(-backRightPower);
+            frontLeftMotor.setPower(0.6* frontLeftPower);
+            backLeftMotor.setPower(0.6 * -backLeftPower);
+            frontRightMotor.setPower(0.6* frontRightPower);
+            backRightMotor.setPower(0.6 * -backRightPower);
 
             flyWheel.setPower(flyPower);
 
