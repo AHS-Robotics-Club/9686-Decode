@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-@TeleOp(name="Limelight Testx`")
+@TeleOp(name="Limelight Test")
 public class Teleop extends LinearOpMode {
 
     private Limelight3A limelight;
@@ -15,7 +15,7 @@ public class Teleop extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         telemetry.setMsTransmissionInterval(11);
-        limelight.pipelineSwitch(0);  // Set pipeline to AprilTag detection
+        limelight.pipelineSwitch(2);  // Set pipeline to AprilTag detection
 
         limelight.start();
 

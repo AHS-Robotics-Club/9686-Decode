@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Kicker {
-
     private ServoImplEx kicker;
     private ElapsedTime kickTimer;
     private boolean isKicking = false;
@@ -20,12 +19,8 @@ public class Kicker {
 
     public void kick() {
 
-
             kicker.setPosition(1);
             kickTimer.reset();
-
-
-
 
             if (kickTimer.milliseconds() > 200) {
                 kicker.setPosition(-1);
@@ -35,13 +30,9 @@ public class Kicker {
                 kicker.setPosition(0);
                 isKicking = false;
             }
-
     }
-
-
-
-
     public double getPos() {
         return kicker.getPosition();
     }
 }
+

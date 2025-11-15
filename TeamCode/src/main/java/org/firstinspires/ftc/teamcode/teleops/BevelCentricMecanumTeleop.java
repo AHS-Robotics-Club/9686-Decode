@@ -33,7 +33,7 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
         Spindex spindex = new Spindex(hardwareMap);
 
          //1 CHUB
-        //CRServoImplEx kicker = hardwareMap.get(CRServoImplEx.class, "kicker"); //1 CHUB
+        CRServoImplEx kicker = hardwareMap.get(CRServoImplEx.class, "kicker"); //1 CHUB
         //CRServoImplEx hood = hardwareMap.get(CRServoImplEx.class, "hood"); // 5 CHUB
 
         // Adjust motor directions for bevel drive layout
@@ -106,13 +106,13 @@ public class BevelCentricMecanumTeleop extends LinearOpMode {
 //                spindex.setPower(0);
 //            }
 
-//            if (gamepad2.a) {
-//                kicker.setPower(1);
-//            } else if (gamepad2.b) {
-//                kicker.setPower(-0.5);
-//            } else {
-//                kicker.setPower(0);
-//            }
+            if (gamepad2.a) {
+                kicker.setPower(1);
+            } else if (gamepad2.b) {
+                kicker.setPower(-0.5);
+            } else {
+                kicker.setPower(0);
+            }
 
 
 
