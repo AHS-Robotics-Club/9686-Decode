@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.teleops;
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.drawCurrent;
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.drawCurrentAndHistory;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 
 import com.arcrobotics.ftclib.command.CommandOpMode;
@@ -11,13 +9,10 @@ import com.bylazar.configurables.PanelsConfigurables;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.teamcode.commands.DriveCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.DriveSubsystemFC;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -25,25 +20,22 @@ import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
-@TeleOp(name="Nice Test Op Mode")
-public class RazamOpMode extends CommandOpMode {
+@TeleOp(name="Nice Vision Test Op Mode")
+public class PPVisionOpmode extends CommandOpMode {
+
     private GamepadEx driverPad, gunnerPad;
-
-
-
-
     private Spindex spindex;
-
     private Kicker kicker;
-
     private Intake intake;
     private Turret turret;
     private Flywheel flywheel;
     private Hood hood;
 
     private Limelight3A limelight;
+
     @Override
     public void initialize() {
+
         if (follower == null) {
             follower = Constants.createFollower(hardwareMap);
             PanelsConfigurables.INSTANCE.refreshClass(this);
@@ -57,10 +49,8 @@ public class RazamOpMode extends CommandOpMode {
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         telemetry.setMsTransmissionInterval(11);
-        limelight.pipelineSwitch(0);  // Set pipeline to AprilTag detection
-
+        limelight.pipelineSwitch(0);
         limelight.start();
-
 
         spindex = new Spindex(hardwareMap);
         intake = new Intake(hardwareMap);
@@ -69,33 +59,21 @@ public class RazamOpMode extends CommandOpMode {
         flywheel = new Flywheel(hardwareMap);
         hood = new Hood(hardwareMap);
 
-
         driverPad = new GamepadEx(gamepad1);
         gunnerPad = new GamepadEx(gamepad2);
 
-
-
-
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
-                    spindex.stepForward();
-                    intake.cycle();
-                }
-
-        );
+            spindex.stepForward();
+            intake.cycle();
+        });
 
         driverPad.getGamepadButton(GamepadKeys.Button.X).whenPressed(() -> {
-                    spindex.bigStepForward();
-                    intake.cycle();
-                }
-
-        );
-
-        gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
-            kicker.kick();
+            spindex.bigStepForward();
+            intake.cycle();
         });
-        gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(() -> {
-            kicker.down();
-        });
+
+        gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(kicker::kick);
+        gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(kicker::down);
 
         register(flywheel);
         register(spindex);
@@ -112,77 +90,66 @@ public class RazamOpMode extends CommandOpMode {
         double flypwr = gamepad2.left_stick_y * -0.85;
         flywheel.manual(flypwr);
 
-
-
-
-
-
-
-        follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, false);
+        follower.setTeleOpDrive(gamepad1.left_stick_y,
+                gamepad1.left_stick_x,
+                gamepad1.right_stick_x,
+                false);
         follower.update();
-
-
-
-        if (gamepad1.dpad_right) {
-            turret.spinRight();
-        } else if (gamepad1.dpad_left) {
-            turret.spinLeft();
-        } else turret.stop();
-
-        if (gamepad2.dpad_up) {
-            hood.spinUp();
-        } else if (gamepad2.dpad_down) {
-            hood.spinDown();
-        } else hood.stop();
-
-        if (gamepad2.a) {
-            kicker.kick();
-        } else {
-            kicker.down();
-        }
 
         LLResult result = limelight.getLatestResult();
 
-        if (result != null && result.isValid()) {
-            Pose3D botpose = result.getBotpose();
+        boolean hasLL = (result != null && result.isValid());
 
+        // -----------------------
+        // TURRET AUTO-AIM LOGIC
+        // -----------------------
+        if (gamepad2.y && hasLL) {
+            turret.autoAim(result.getTx());
+        } else {
+            if (gamepad1.dpad_right) turret.spinRight();
+            else if (gamepad1.dpad_left) turret.spinLeft();
+            else turret.stop();
+        }
+
+
+        // Pipeline switching
+
+        if (gamepad1.x) {
+
+            limelight.pipelineSwitch(0);
+
+        }
+
+        if (gamepad1.y) {
+            limelight.pipelineSwitch(1);
+        }
+
+
+
+        // Hood
+        if (gamepad2.dpad_up) hood.spinUp();
+        else if (gamepad2.dpad_down) hood.spinDown();
+        else hood.stop();
+
+        // Kicker
+        if (gamepad2.a) kicker.kick();
+        else kicker.down();
+
+        // -----------------------
+        // TELEMETRY
+        // -----------------------
+        if (hasLL) {
             telemetry.addData("LL VALID", true);
             telemetry.addData("tx", result.getTx());
             telemetry.addData("ty", result.getTy());
-            telemetry.addData("Botpose", botpose.toString());
+            telemetry.addData("Botpose", result.getBotpose().toString());
         } else {
             telemetry.addLine("⚠️ Limelight sees nothing / invalid result");
         }
 
-
-
         telemetry.addData("Spindex Encoder", spindex.getCurrentPos());
         telemetry.addData("Target Spindex Position", spindex.getPidTarget());
 
-        // telemetry.addData("Motor Power", spindex.getMotorPwr());
         telemetry.update();
     }
-//    /** This initializes the PoseUpdater, the mecanum drive motors, and the Panels telemetry. */
-//    @Override
-//    public void init_loop() {
-//        follower.update();
-//    }
-
-//    @Override
-//    public void start() {
-//        follower.startTeleopDrive();
-//        follower.update();
-//    }
-//
-//    /**
-//     * This updates the robot's pose estimate, the simple mecanum drive, and updates the
-//     * Panels telemetry with the robot's position as well as draws the robot's position.
-//     */
-//    @Override
-//    public void loop() {
-//        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
-//        follower.update();
-//
-//        drawCurrentAndHistory();
-//    }
 }

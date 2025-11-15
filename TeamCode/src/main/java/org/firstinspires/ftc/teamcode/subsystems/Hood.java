@@ -28,7 +28,7 @@ public class Hood extends SubsystemBase {
 
     public void spinUp() {
 
-        hood.setPower(1);
+        hood.setPower(-1);
 
 
 
@@ -36,7 +36,7 @@ public class Hood extends SubsystemBase {
 
     public void spinDown() {
 
-        hood.setPower(-1);
+        hood.setPower(1);
 
 
 
