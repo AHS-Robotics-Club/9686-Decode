@@ -18,6 +18,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.commands.DriveCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.DriveSubsystemFC;
+import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
@@ -36,6 +38,8 @@ public class RazamOpMode extends CommandOpMode {
 
     private Intake intake;
     private Turret turret;
+    private Flywheel flywheel;
+    private Hood hood;
 
     private Limelight3A limelight;
     @Override
@@ -62,8 +66,13 @@ public class RazamOpMode extends CommandOpMode {
         intake = new Intake(hardwareMap);
         kicker = new Kicker(hardwareMap);
         turret = new Turret(hardwareMap);
+        flywheel = new Flywheel(hardwareMap);
+        hood = new Hood(hardwareMap);
+
+
         driverPad = new GamepadEx(gamepad1);
         gunnerPad = new GamepadEx(gamepad2);
+
 
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
                     spindex.stepForward();
@@ -79,23 +88,12 @@ public class RazamOpMode extends CommandOpMode {
 
         );
 
-        if (gamepad1.dpad_right) {
-            turret.spinRight();
-        } else if (gamepad1.dpad_left) {
-            turret.spinLeft();
-        } else turret.stop();
-
-        if (gamepad1.a) {
-            kicker.kick();
-        } else {
-            kicker.down();
-        }
-
-
-
+        register(flywheel);
         register(spindex);
         register(intake);
         register(turret);
+        register(hood);
+        register(kicker);
         run();
     }
 
@@ -106,9 +104,30 @@ public class RazamOpMode extends CommandOpMode {
 
         Pose3D botpose = result.getBotpose();
 
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, false);
         follower.update();
 
+        double flypwr = Math.min(-0.2, gamepad1.left_stick_y * -0.85);
+
+        flywheel.manual(flypwr);
+
+        if (gamepad1.dpad_right) {
+            turret.spinRight();
+        } else if (gamepad1.dpad_left) {
+            turret.spinLeft();
+        } else turret.stop();
+
+        if (gamepad2.dpad_up) {
+            hood.spinUp();
+        } else if (gamepad2.dpad_down) {
+            hood.spinDown();
+        } else hood.stop();
+
+        if (gamepad2.a) {
+            kicker.kick();
+        } else {
+            kicker.down();
+        }
 
         telemetry.addData("Spindex Encoder", spindex.getCurrentPos());
         telemetry.addData("Target Spindex Position", spindex.getPidTarget());
