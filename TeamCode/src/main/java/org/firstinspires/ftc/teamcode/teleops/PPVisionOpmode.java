@@ -14,6 +14,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.commands.AlwaysTrackCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
@@ -88,13 +89,14 @@ public class PPVisionOpmode extends CommandOpMode {
         register(hood);
         register(kicker);
         register(limelight);
+        register(turret, limelight);
     }
 
     @Override
     public void run() {
         super.run();
 
-        double flypwr = gamepad2.left_stick_y * -0.78;
+        double flypwr = gamepad2.left_stick_y * -0.88;
         flywheel.manual(flypwr);
 
         follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, false);
@@ -106,13 +108,11 @@ public class PPVisionOpmode extends CommandOpMode {
         telemetry.addData("Has LL", hasLL);
 
 
-        if (gamepad2.y && hasLL) {
-            turret.autoAim(result.getTx());
-        } else {
-            if (gamepad1.dpad_right) turret.spinRight();
-            else if (gamepad1.dpad_left) turret.spinLeft();
-            else turret.stop();
-        }
+        turret.setDefaultCommand(new AlwaysTrackCommand(turret, limelight));
+
+        if (gamepad1.dpad_right) turret.spinRight();
+        else if (gamepad1.dpad_left) turret.spinLeft();
+        else turret.stop();
 
         if (gamepad1.right_bumper) {
 
@@ -174,6 +174,7 @@ public class PPVisionOpmode extends CommandOpMode {
 // Spindex Telemetry
         telemetry.addData("Spindex Encoder", spindex.getCurrentPos());
         telemetry.addData("Target Spindex Position", spindex.getPidTarget());
+        telemetry.addData("Flypower", flypwr);
 
         telemetry.update();
 
