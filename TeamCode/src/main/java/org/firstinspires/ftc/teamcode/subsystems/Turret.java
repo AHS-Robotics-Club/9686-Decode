@@ -10,9 +10,9 @@ public class Turret extends SubsystemBase {
     private DcMotorEx turret;
 
     // Tunable auto-aim scaling
-    private static final double AUTO_AIM_K = 0.03;   // adjust 0.02–0.05
-    private static final double MAX_POWER = 0.4;     // safety cap
-    private static final double DEADBAND = 1.5;      // degrees
+    private static final double AUTO_AIM_K = 0.06;   // adjust 0.02–0.05
+    private static final double MAX_POWER = 0.5;     // safety cap
+    private static final double DEADBAND = .5;      // degrees
 
     public Turret(HardwareMap hardwareMap) {
 
@@ -21,7 +21,11 @@ public class Turret extends SubsystemBase {
     }
 
     @Override
-    public void periodic() { }
+    public void periodic() {
+
+
+
+    }
 
     // --------------------
     // MANUAL CONTROL

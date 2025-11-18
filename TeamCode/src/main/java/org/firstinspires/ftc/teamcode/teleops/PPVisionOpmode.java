@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.teleops;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 
+import android.hardware.HardwareBuffer;
+
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
@@ -17,10 +19,11 @@ import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
+import org.firstinspires.ftc.teamcode.subsystems.Limelight;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
-@TeleOp(name="Nice Vision Test Op Mode")
+@TeleOp(name = "Nice Vision Test Op Mode")
 public class PPVisionOpmode extends CommandOpMode {
 
     private GamepadEx driverPad, gunnerPad;
@@ -31,7 +34,7 @@ public class PPVisionOpmode extends CommandOpMode {
     private Flywheel flywheel;
     private Hood hood;
 
-    private Limelight3A limelight;
+    private Limelight limelight;
 
     @Override
     public void initialize() {
@@ -47,10 +50,13 @@ public class PPVisionOpmode extends CommandOpMode {
         follower.startTeleopDrive();
         follower.update();
 
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        telemetry.setMsTransmissionInterval(11);
-        limelight.pipelineSwitch(0);
-        limelight.start();
+//        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+//        telemetry.setMsTransmissionInterval(11);
+//        limelight.setPollRateHz(100);
+//        limelight.pipelineSwitch(0);
+//        limelight.start();
+
+        limelight = new Limelight(hardwareMap);
 
         spindex = new Spindex(hardwareMap);
         intake = new Intake(hardwareMap);
@@ -81,28 +87,25 @@ public class PPVisionOpmode extends CommandOpMode {
         register(turret);
         register(hood);
         register(kicker);
+        register(limelight);
     }
 
     @Override
     public void run() {
         super.run();
 
-        double flypwr = gamepad2.left_stick_y * -0.85;
+        double flypwr = gamepad2.left_stick_y * -0.78;
         flywheel.manual(flypwr);
 
-        follower.setTeleOpDrive(gamepad1.left_stick_y,
-                gamepad1.left_stick_x,
-                gamepad1.right_stick_x,
-                false);
+        follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, false);
         follower.update();
 
-        LLResult result = limelight.getLatestResult();
+        LLResult result = limelight.getRawResult();
 
-        boolean hasLL = (result != null && result.isValid());
+        boolean hasLL = limelight.hasTarget();
+        telemetry.addData("Has LL", hasLL);
 
-        // -----------------------
-        // TURRET AUTO-AIM LOGIC
-        // -----------------------
+
         if (gamepad2.y && hasLL) {
             turret.autoAim(result.getTx());
         } else {
@@ -111,45 +114,68 @@ public class PPVisionOpmode extends CommandOpMode {
             else turret.stop();
         }
 
+        if (gamepad1.right_bumper) {
+
+            spindex.fineRight();
+        } else if (gamepad1.left_bumper) {
+
+            spindex.fineLeft();
+        }
+
 
         // Pipeline switching
 
-        if (gamepad1.x) {
-
-            limelight.pipelineSwitch(0);
-
-        }
-
         if (gamepad1.y) {
-            limelight.pipelineSwitch(1);
+
+            limelight.switchPipelineRed();
+
+        }
+
+        if (gamepad1.b) {
+            limelight.switchPipelineBlue();
+        }
+        if (result != null) {
+            if (gamepad2.y && hasLL) {
+                turret.autoAim(result.getTx());
+            } else {
+                if (gamepad1.dpad_right) turret.spinRight();
+                else if (gamepad1.dpad_left) turret.spinLeft();
+                else turret.stop();
+            }
+        } else {
+            // If result is null, stop the turret for safety/no target
+            turret.stop();
         }
 
 
-
-        // Hood
+// Hoodlime (Manual Control)
         if (gamepad2.dpad_up) hood.spinUp();
         else if (gamepad2.dpad_down) hood.spinDown();
         else hood.stop();
 
-        // Kicker
+// Kicker (Manual Control)
         if (gamepad2.a) kicker.kick();
         else kicker.down();
 
-        // -----------------------
-        // TELEMETRY
-        // -----------------------
-        if (hasLL) {
+// Limelight Telemetry (Safely Checked)
+        if (hasLL && result != null) {
             telemetry.addData("LL VALID", true);
             telemetry.addData("tx", result.getTx());
             telemetry.addData("ty", result.getTy());
-            telemetry.addData("Botpose", result.getBotpose().toString());
+            // Safe check for getBotpose() as well
+            telemetry.addData("Botpose", result.getBotpose() != null ? result.getBotpose().toString() : "N/A");
         } else {
-            telemetry.addLine("⚠️ Limelight sees nothing / invalid result");
+            telemetry.addLine("Limelight sees nothing / invalid result");
+            if (result == null) {
+                telemetry.addLine("Limelight result is NULL (Waiting for first valid frame)");
+            }
         }
 
+// Spindex Telemetry
         telemetry.addData("Spindex Encoder", spindex.getCurrentPos());
         telemetry.addData("Target Spindex Position", spindex.getPidTarget());
 
         telemetry.update();
+
     }
 }

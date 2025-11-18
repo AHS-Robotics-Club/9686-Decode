@@ -16,9 +16,9 @@ public class ForwardAuton extends LinearOpMode {
         DcMotor backRightMotor  = hardwareMap.dcMotor.get("bR"); // 3 CHUB
 
         // === Match your TeleOp directions ===
+        frontLeftMotor.setDirection((DcMotorSimple.Direction.FORWARD));
         backLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Optional: reset encoders for safety
@@ -34,13 +34,13 @@ public class ForwardAuton extends LinearOpMode {
         if (isStopRequested()) return;
 
         // === Drive forward ===
-        double power = 0.7  ; // Adjust speed as needed
+        double power = 0.4  ; // Adjust speed as needed
         frontLeftMotor.setPower(power);
         backLeftMotor.setPower(power);
         frontRightMotor.setPower(power);
         backRightMotor.setPower(power);
 
-        sleep(1000); // 1 second
+        sleep(2000); // 1 second
 
         // === Stop motors ===
         frontLeftMotor.setPower(0);

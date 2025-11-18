@@ -16,7 +16,7 @@ public class Limelight extends SubsystemBase {
 
     public Limelight(HardwareMap hardwareMap) {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-
+        limelight.setPollRateHz(90);
         // Low latency (11ms) update rate
         limelight.start();
         limelight.pipelineSwitch(0);   // AprilTag pipeline
@@ -41,11 +41,11 @@ public class Limelight extends SubsystemBase {
     }
 
     public double getTx() {
-        return hasTarget() ? lastResult.getTx() : 0;
+        return hasTarget() ? lastResult.getTx() : 0.000;
     }
 
     public double getTy() {
-        return hasTarget() ? lastResult.getTy() : 0;
+        return hasTarget() ? lastResult.getTy() : 0.000;
     }
 
     public Pose3D getBotPose() {
@@ -54,5 +54,13 @@ public class Limelight extends SubsystemBase {
 
     public LLResult getRawResult() {
         return lastResult;
+    }
+
+    public void switchPipelineRed() {
+        limelight.pipelineSwitch(0);
+    }
+
+    public void switchPipelineBlue() {
+        limelight.pipelineSwitch(1);
     }
 }
