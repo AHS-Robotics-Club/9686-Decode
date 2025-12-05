@@ -17,14 +17,14 @@ public class Turret extends SubsystemBase {
     // MIN_POWER: CRITICAL FIX.
     // 0.14 was likely too high, causing it to jump past the target.
     // Lowered to 0.07 (enough to move, but not enough to slam).
-    private static final double MIN_POWER = 0.075;
+    private static final double MIN_POWER = 0.09;
 
     // MAX_POWER: Capped to prevent violence during large turns
-    private static final double MAX_POWER = 0.75;
+    private static final double MAX_POWER = 0.85;
 
     // DEADBAND: Kept at 1.0 degree.
     // If it still oscillates, increase this to 1.5.
-    private static final double DEADBAND = 1.0;
+    private static final double DEADBAND = 1.2;
 
     public Turret(HardwareMap hardwareMap) {
         turret = hardwareMap.get(DcMotorEx.class, "turret");
