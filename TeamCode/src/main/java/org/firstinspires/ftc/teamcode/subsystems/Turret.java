@@ -17,10 +17,10 @@ public class Turret extends SubsystemBase {
     // MIN_POWER: CRITICAL FIX.
     // 0.14 was likely too high, causing it to jump past the target.
     // Lowered to 0.07 (enough to move, but not enough to slam).
-    private static final double MIN_POWER = 0.09;
+    private static final double MIN_POWER = 0.1;
 
     // MAX_POWER: Capped to prevent violence during large turns
-    private static final double MAX_POWER = 0.85;
+    private static final double MAX_POWER = 0.83;
 
     // DEADBAND: Kept at 1.0 degree.
     // If it still oscillates, increase this to 1.5.

@@ -70,11 +70,13 @@ public class PPVisionOpmode extends CommandOpMode {
         gunnerPad = new GamepadEx(gamepad2);
 
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
+            kicker.down();
             spindex.stepForward();
             intake.cycle();
         });
 
         driverPad.getGamepadButton(GamepadKeys.Button.X).whenPressed(() -> {
+            kicker.down();
             spindex.bigStepForward();
             intake.cycle();
         });
@@ -96,7 +98,7 @@ public class PPVisionOpmode extends CommandOpMode {
     public void run() {
         super.run();
 
-        double flypwr = gamepad2.left_stick_y * -0.88;
+        double flypwr = gamepad2.left_stick_y * -0.85;
         flywheel.manual(flypwr);
 
         follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, false);

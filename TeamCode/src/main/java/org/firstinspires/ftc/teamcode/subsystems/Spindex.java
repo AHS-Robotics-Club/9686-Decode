@@ -93,9 +93,9 @@ public class Spindex extends SubsystemBase {
     @Override
     public void periodic() {
 
-            double current = -spindexMtr.getCurrentPosition();
-            double power = spindexPID.calculate(current, pidTarget);
-            spindexMtr.setPower(power);
+        double current = -spindexMtr.getCurrentPosition();
+        double power = spindexPID.calculate(current, pidTarget);
+        spindexMtr.setPower(power);
 
     }
 
