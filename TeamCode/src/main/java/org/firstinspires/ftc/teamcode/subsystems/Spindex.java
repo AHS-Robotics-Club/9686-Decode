@@ -17,7 +17,7 @@ public class Spindex extends SubsystemBase {
 
     // 1/6 rotation step for manual PID stepping
     private static final double COUNTS_PER_SLOT = COUNTS_PER_REV / 6.0;
-    private static final double BIGCOUNTS_PER_SLOT = COUNTS_PER_REV / 3;
+    private static final double BIGCOUNTS_PER_SLOT = (int)(COUNTS_PER_REV / 3.0);
 
     // The actual six slot encoder positions
     private final int[] positions = {
@@ -33,7 +33,7 @@ public class Spindex extends SubsystemBase {
     private int currentIndex = 0;
 
     // PID for manual fine movement
-    private PIDController spindexPID = new PIDController(0.000455, 0.0000001, 0.00000);
+    private PIDController spindexPID = new PIDController(0.000693, 0.00, 0.00004);
     private int pidTarget = 0;
 
     public Spindex(HardwareMap hardwareMap) {
@@ -71,8 +71,13 @@ public class Spindex extends SubsystemBase {
         goToIndex(currentIndex);
     }
 
+    public void setPidValues(double kP, double kI, double kD) {
+
+        spindexPID.setPID(kP, kI, kD);
+    }
+
     // -------------------------
-    // MANUAL PID SLOT STEPPING
+    // MANUAL PID SLOT STEPPING`
     // -------------------------
 
     public void stepForward() {
