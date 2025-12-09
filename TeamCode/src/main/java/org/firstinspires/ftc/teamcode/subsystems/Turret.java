@@ -12,15 +12,15 @@ public class Turret extends SubsystemBase {
     // --- TUNING ---
 
     // KP: Lowered slightly to reduce the "springiness" / wobble
-    private static final double KP = 0.0305;
+    private static final double KP = 0.0310;
 
     // MIN_POWER: CRITICAL FIX.
     // 0.14 was likely too high, causing it to jump past the target.
     // Lowered to 0.07 (enough to move, but not enough to slam).
-    private static final double MIN_POWER = 0.1;
+    private static final double MIN_POWER = 0.09;
 
     // MAX_POWER: Capped to prevent violence during large turns
-    private static final double MAX_POWER = 0.83;
+    private static final double MAX_POWER = 0.95;
 
     // DEADBAND: Kept at 1.0 degree.
     // If it still oscillates, increase this to 1.5.

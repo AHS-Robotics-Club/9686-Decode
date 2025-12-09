@@ -73,10 +73,10 @@ public class ManualAuton extends LinearOpMode {
 
         sleep(1000);
         move(0.5, 0.5, 0.5, 0.5, 1600);
-        flywheel.manual(-0.8);
+        flywheel.manual(-0.88);
         sleep(2000);
         kicker.kick();
-        sleep(500);
+        sleep(300);
         kicker.down();
         sleep(200);
         spindex.bigStepForward();

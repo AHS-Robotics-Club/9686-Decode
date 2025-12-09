@@ -26,7 +26,7 @@ public class Kicker extends SubsystemBase {
     }
 
     public void down() {
-        kicker.setPosition(0);
+        kicker.setPosition(0.55);
     }
 
 

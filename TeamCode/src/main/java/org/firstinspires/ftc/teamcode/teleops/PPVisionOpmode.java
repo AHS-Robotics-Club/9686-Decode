@@ -7,6 +7,7 @@ import android.hardware.HardwareBuffer;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+//import com.bylazar.configurables.PanelsConfigurables;
 import com.bylazar.configurables.PanelsConfigurables;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -78,6 +79,17 @@ public class PPVisionOpmode extends CommandOpMode {
         driverPad.getGamepadButton(GamepadKeys.Button.X).whenPressed(() -> {
             kicker.down();
             spindex.bigStepForward();
+            intake.cycle();
+        });
+
+        gunnerPad.getGamepadButton(GamepadKeys.Button.X).whenPressed(() -> {
+            kicker.down();
+            spindex.bigStepForward();
+            intake.cycle();
+        });
+        gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(() -> {
+            kicker.down();
+            spindex.stepForward();
             intake.cycle();
         });
 
