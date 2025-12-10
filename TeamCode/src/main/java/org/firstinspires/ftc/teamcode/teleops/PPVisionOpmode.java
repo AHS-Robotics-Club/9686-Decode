@@ -13,6 +13,8 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.commands.AlwaysTrackCommand;
@@ -20,8 +22,10 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.IntakeColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.Limelight;
+import org.firstinspires.ftc.teamcode.subsystems.OuttakeColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
@@ -37,6 +41,12 @@ public class PPVisionOpmode extends CommandOpMode {
     private Hood hood;
 
     private Limelight limelight;
+
+    private int numGreenBalls, numPurpleBalls, totalBalls;
+
+    private OuttakeColorSensor outtakeColor;
+
+    private IntakeColorSensor intakeColor;
 
     @Override
     public void initialize() {
@@ -66,6 +76,8 @@ public class PPVisionOpmode extends CommandOpMode {
         turret = new Turret(hardwareMap);
         flywheel = new Flywheel(hardwareMap);
         hood = new Hood(hardwareMap);
+        intakeColor = new IntakeColorSensor(hardwareMap);
+        outtakeColor = new OuttakeColorSensor(hardwareMap);
 
         driverPad = new GamepadEx(gamepad1);
         gunnerPad = new GamepadEx(gamepad2);
@@ -104,11 +116,15 @@ public class PPVisionOpmode extends CommandOpMode {
         register(kicker);
         register(limelight);
         register(turret, limelight);
+        register(outtakeColor);
+        register(intakeColor);
     }
 
     @Override
     public void run() {
         super.run();
+
+        totalBalls = numGreenBalls + numPurpleBalls;
 
         double flypwr = gamepad2.left_stick_y * -0.85;
         flywheel.manual(flypwr);
@@ -190,7 +206,38 @@ public class PPVisionOpmode extends CommandOpMode {
         telemetry.addData("Target Spindex Position", spindex.getPidTarget());
         telemetry.addData("Flypower", flypwr);
 
+
+
+        //Color Sensors
+
+
+        telemetry.addData("Intake Red", intakeColor.getRed());
+        telemetry.addData("Intake Blue", intakeColor.getBlue());
+        telemetry.addData("Intake Green", intakeColor.getGreen());
+
+        telemetry.addData("Intake Hue", intakeColor.getHue());
+        telemetry.addData("Intake Saturation", intakeColor.getSat());
+        telemetry.addData("Intake Value", intakeColor.getVals());
+
+        telemetry.addData("Outtake Red", outtakeColor.getRed());
+        telemetry.addData("Outtake Blue", outtakeColor.getBlue());
+        telemetry.addData("Outtake Green", outtakeColor.getGreen());
+
+        telemetry.addData("Outtake Hue", outtakeColor.getHue());
+        telemetry.addData("Outtake Saturation", outtakeColor.getSat());
+        telemetry.addData("Outtake Value", outtakeColor.getVals());
+
+
+
         telemetry.update();
+
+
+
+    }
+
+    public void emptyChamber() {
+
+
 
     }
 }
