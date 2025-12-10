@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import android.graphics.Color;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 public class IntakeColorSensor extends SubsystemBase {
 
     private NormalizedColorSensor intakeColor;
+    private DistanceSensor intakeDistance;
     public float[] hsvValues = new float[3];
     NormalizedRGBA colors;
 
@@ -17,6 +19,7 @@ public class IntakeColorSensor extends SubsystemBase {
 
         this.intakeColor = hardwareMap.get(NormalizedColorSensor.class, "intakeColor");
         this.colors = intakeColor.getNormalizedColors();
+        this.intakeDistance = hardwareMap.get(DistanceSensor.class, "outtakeColor");
 
 
     }
@@ -25,6 +28,7 @@ public class IntakeColorSensor extends SubsystemBase {
     public void periodic() {
         colors = intakeColor.getNormalizedColors();
         Color.colorToHSV(colors.toColor(), hsvValues);
+
 
 
     }

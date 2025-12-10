@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import com.arcrobotics.ftclib.command.Subsystem;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -11,12 +12,15 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 public class OuttakeColorSensor extends SubsystemBase {
 
     private NormalizedColorSensor outtakeColor;
+
+    private DistanceSensor outtakeDistance;
     public float[] hsvValues = new float[3];
     NormalizedRGBA colors;
 
     public OuttakeColorSensor (HardwareMap hardwareMap) {
 
         this.outtakeColor = hardwareMap.get(NormalizedColorSensor.class, "outtakeColor");
+        this.outtakeDistance =hardwareMap.get(DistanceSensor.class, "outtakeColor");
         this.colors = outtakeColor.getNormalizedColors();
 
 
