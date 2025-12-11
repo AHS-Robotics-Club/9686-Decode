@@ -72,7 +72,7 @@ public class IntakeColorSensor extends SubsystemBase {
     }
 
     public double getDistance() {
-        return intakeCD.getDistance(DistanceUnit.CM);
+        return intakeCD.getDistance(DistanceUnit.MM);
     }
 
 

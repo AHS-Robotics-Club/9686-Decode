@@ -74,7 +74,7 @@ public class OuttakeColorSensor extends SubsystemBase {
     }
 
     public double getDistance() {
-        return outtakeCD.getDistance(DistanceUnit.CM);
+        return outtakeCD.getDistance(DistanceUnit.MM);
     }
 
 
