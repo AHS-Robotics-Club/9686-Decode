@@ -211,22 +211,7 @@ public class PPVisionOpmode extends CommandOpMode {
         //Color Sensors
 
 
-        telemetry.addData("Intake Red", intakeColor.getRed());
-        telemetry.addData("Intake Blue", intakeColor.getBlue());
-        telemetry.addData("Intake Green", intakeColor.getGreen());
-
-        telemetry.addData("Intake Hue", intakeColor.getHue());
-        telemetry.addData("Intake Saturation", intakeColor.getSat());
-        telemetry.addData("Intake Value", intakeColor.getVals());
-
-        telemetry.addData("Outtake Red", outtakeColor.getRed());
-        telemetry.addData("Outtake Blue", outtakeColor.getBlue());
-        telemetry.addData("Outtake Green", outtakeColor.getGreen());
-
-        telemetry.addData("Outtake Hue", outtakeColor.getHue());
-        telemetry.addData("Outtake Saturation", outtakeColor.getSat());
-        telemetry.addData("Outtake Value", outtakeColor.getVals());
-
+        colorTelemetry();
 
 
         telemetry.update();
@@ -238,6 +223,30 @@ public class PPVisionOpmode extends CommandOpMode {
     public void emptyChamber() {
 
 
+
+    }
+
+
+    public void colorTelemetry() {
+        telemetry.addData("Intake Red", intakeColor.getRed());
+        telemetry.addData("Intake Blue", intakeColor.getBlue());
+        telemetry.addData("Intake Green", intakeColor.getGreen());
+
+        telemetry.addData("Intake Hue", intakeColor.getHue());
+        telemetry.addData("Intake Saturation", intakeColor.getSat());
+        telemetry.addData("Intake Value", intakeColor.getVals());
+
+        telemetry.addData("Intake Distance", intakeColor.getDistance());
+
+        telemetry.addData("Outtake Red", outtakeColor.getRed());
+        telemetry.addData("Outtake Blue", outtakeColor.getBlue());
+        telemetry.addData("Outtake Green", outtakeColor.getGreen());
+
+        telemetry.addData("Outtake Hue", outtakeColor.getHue());
+        telemetry.addData("Outtake Saturation", outtakeColor.getSat());
+        telemetry.addData("Outtake Value", outtakeColor.getVals());
+
+        telemetry.addData("Outtake Distance", outtakeColor.getDistance());
 
     }
 }

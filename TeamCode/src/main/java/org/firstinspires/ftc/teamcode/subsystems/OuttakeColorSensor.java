@@ -4,31 +4,33 @@ import android.graphics.Color;
 
 import com.arcrobotics.ftclib.command.Subsystem;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 public class OuttakeColorSensor extends SubsystemBase {
 
-    private NormalizedColorSensor outtakeColor;
+    private RevColorSensorV3 outtakeCD;
 
-    private DistanceSensor outtakeDistance;
     public float[] hsvValues = new float[3];
     NormalizedRGBA colors;
 
     public OuttakeColorSensor (HardwareMap hardwareMap) {
 
-        this.outtakeColor = hardwareMap.get(NormalizedColorSensor.class, "outtakeColor");
-        this.outtakeDistance =hardwareMap.get(DistanceSensor.class, "outtakeColor");
-        this.colors = outtakeColor.getNormalizedColors();
+        this.outtakeCD = hardwareMap.get(RevColorSensorV3.class, "outtakeColor");
+
+        this.colors = outtakeCD.getNormalizedColors();
 
 
     }
 
 
     public void periodic() {
-        colors = outtakeColor.getNormalizedColors();
+        colors = outtakeCD.getNormalizedColors();
         Color.colorToHSV(colors.toColor(), hsvValues);
 
 
@@ -37,6 +39,8 @@ public class OuttakeColorSensor extends SubsystemBase {
     public float getRed() {
 
         return colors.red;
+
+
     }
 
     public float getGreen() {
@@ -68,6 +72,12 @@ public class OuttakeColorSensor extends SubsystemBase {
 
         return hsvValues[2];
     }
+
+    public double getDistance() {
+        return outtakeCD.getDistance(DistanceUnit.CM);
+    }
+
+
 
 
 
