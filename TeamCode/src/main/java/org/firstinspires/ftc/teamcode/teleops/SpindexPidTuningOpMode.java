@@ -13,7 +13,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @Config
 @TeleOp(name = "Spindex PID Tuning Opmode")
-public class PidTuningOpMode extends CommandOpMode {
+public class SpindexPidTuningOpMode extends CommandOpMode {
 
     private Spindex spindex;
 

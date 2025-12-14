@@ -24,7 +24,7 @@ public class Turret extends SubsystemBase {
 
     // DEADBAND: Kept at 1.0 degree.
     // If it still oscillates, increase this to 1.5.
-    private static final double DEADBAND = 1.2;
+    private static final double DEADBAND = 1.0;
 
     public Turret(HardwareMap hardwareMap) {
         turret = hardwareMap.get(DcMotorEx.class, "turret");

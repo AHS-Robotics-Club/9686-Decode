@@ -22,6 +22,8 @@ public class IntakeColorSensor extends SubsystemBase {
         this.intakeCD = hardwareMap.get(RevColorSensorV3.class, "intakeColor");
         this.colors = intakeCD.getNormalizedColors();
 
+        intakeCD.setGain(8);
+
 
     }
 

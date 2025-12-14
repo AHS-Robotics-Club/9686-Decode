@@ -5,15 +5,20 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 import android.hardware.HardwareBuffer;
 
 import com.arcrobotics.ftclib.command.CommandOpMode;
+import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.Robot;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 //import com.bylazar.configurables.PanelsConfigurables;
 import com.bylazar.configurables.PanelsConfigurables;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.util.NanoTimer;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
@@ -28,6 +33,9 @@ import org.firstinspires.ftc.teamcode.subsystems.Limelight;
 import org.firstinspires.ftc.teamcode.subsystems.OuttakeColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
+import org.firstinspires.ftc.teamcode.constants.RobotConstraints;
+
+import kotlin.time.Instant;
 
 @TeleOp(name = "Nice Vision Test Op Mode")
 public class PPVisionOpmode extends CommandOpMode {
@@ -44,9 +52,17 @@ public class PPVisionOpmode extends CommandOpMode {
 
     private int numGreenBalls, numPurpleBalls, totalBalls;
 
-    private OuttakeColorSensor outtakeColor;
+    private boolean lastGreen, lastPurple;
 
-    private IntakeColorSensor intakeColor;
+    private NanoTimer transferTimer;
+
+    private IMU imu;
+
+
+
+   // private OuttakeColorSensor outtakeColor;
+
+    private IntakeColorSensor intakeCD;
 
     @Override
     public void initialize() {
@@ -68,6 +84,15 @@ public class PPVisionOpmode extends CommandOpMode {
 //        limelight.pipelineSwitch(0);
 //        limelight.start();
 
+
+        IMU imu = hardwareMap.get(IMU.class, "imu");
+
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+        // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
+        imu.initialize(parameters);
+
         limelight = new Limelight(hardwareMap);
 
         spindex = new Spindex(hardwareMap);
@@ -76,8 +101,10 @@ public class PPVisionOpmode extends CommandOpMode {
         turret = new Turret(hardwareMap);
         flywheel = new Flywheel(hardwareMap);
         hood = new Hood(hardwareMap);
-        intakeColor = new IntakeColorSensor(hardwareMap);
-        outtakeColor = new OuttakeColorSensor(hardwareMap);
+        intakeCD = new IntakeColorSensor(hardwareMap);
+       // outtakeColor = new OuttakeColorSensor(hardwareMap);
+
+        transferTimer = new NanoTimer();
 
         driverPad = new GamepadEx(gamepad1);
         gunnerPad = new GamepadEx(gamepad2);
@@ -116,8 +143,8 @@ public class PPVisionOpmode extends CommandOpMode {
         register(kicker);
         register(limelight);
         register(turret, limelight);
-        register(outtakeColor);
-        register(intakeColor);
+      //  register(outtakeColor);
+        register(intakeCD);
     }
 
     @Override
@@ -125,6 +152,21 @@ public class PPVisionOpmode extends CommandOpMode {
         super.run();
 
         totalBalls = numGreenBalls + numPurpleBalls;
+
+        double distance = intakeCD.getDistance();
+
+        boolean ballPresent = distance < 50;
+
+        boolean isGreen = ballPresent && intakeCD.getGreen() > 0.0145;
+        boolean isPurple = ballPresent && !isGreen;
+
+
+        boolean counting = false;
+        boolean pendingGreen = false;
+        boolean pendingPurple = false;
+
+
+
 
         double flypwr = gamepad2.left_stick_y * -0.85;
         flywheel.manual(flypwr);
@@ -139,6 +181,10 @@ public class PPVisionOpmode extends CommandOpMode {
 
 
         turret.setDefaultCommand(new AlwaysTrackCommand(turret, limelight));
+
+        if (gamepad1.options) {
+            imu.resetYaw();
+        }
 
         if (gamepad1.dpad_right) turret.spinRight();
         else if (gamepad1.dpad_left) turret.spinLeft();
@@ -157,6 +203,8 @@ public class PPVisionOpmode extends CommandOpMode {
 
         if (gamepad1.y) {
 
+
+
             limelight.switchPipelineRed();
 
         }
@@ -164,6 +212,70 @@ public class PPVisionOpmode extends CommandOpMode {
         if (gamepad1.b) {
             limelight.switchPipelineBlue();
         }
+
+
+        if (!counting && totalBalls < 3 && ballPresent) {
+
+
+            transferTimer.resetTimer();
+            counting = true;
+
+            pendingGreen = isGreen;
+            pendingPurple = isPurple;
+
+            spindex.bigStepForward();
+
+        }
+
+        if (counting && transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
+
+            if (pendingGreen) numGreenBalls++;
+            if (pendingPurple) numPurpleBalls++;
+
+            counting = false;      // Ready for the next ball
+            pendingGreen = false;
+            pendingPurple = false;
+        }
+
+
+
+//        if (totalBalls < 3 && ballPresent && intakeCD.getGreen() > 0.015 && !lastGreen) {
+//
+//            transferTimer.resetTimer();
+//
+//            spindex.bigStepForward();
+//
+//            if (transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
+//
+//                numGreenBalls++;
+//            }
+//
+//
+//
+//            lastGreen = true;
+//
+//
+//
+//        }
+//
+//        if (totalBalls < 3 && intakeCD.getDistance() < 50 && !lastPurple) {
+//
+//            numPurpleBalls++;
+//
+//            spindex.bigStepForward();
+//
+//            lastPurple = true;
+//
+//            sleep(300);
+//
+//        }
+
+
+
+
+
+
+
         if (result != null) {
             if (gamepad2.y && hasLL) {
                 turret.autoAim(result.getTx());
@@ -207,6 +319,11 @@ public class PPVisionOpmode extends CommandOpMode {
         telemetry.addData("Flypower", flypwr);
 
 
+        telemetry.addData("Total Balls", totalBalls);
+        telemetry.addData("G Balls", numGreenBalls);
+        telemetry.addData("P Balls", numPurpleBalls);
+
+
 
         //Color Sensors
 
@@ -220,33 +337,86 @@ public class PPVisionOpmode extends CommandOpMode {
 
     }
 
-    public void emptyChamber() {
-
-
-
-    }
+//    public void emptyChamber() {
+//
+//        // if a ball is detected in the intake threshhold, the ball is not aligned in outtake, so step by 60 degs.
+//
+//        boolean shot1 = false;
+//        boolean shot2 = false;
+//        boolean shot3 = false;
+//
+//        boolean hasBalls = totalBalls > 0;
+//
+//
+//        if (intakeCD.getDistance() < RobotConstraints.INTAKE_BALL_CHAMBERED_DISTANCE) spindex.stepForward();
+//
+//
+//        if (hasBalls) {
+//            kicker.kick();
+//            kicker.down();
+//            shot1 = true;
+//
+//            totalBalls--;
+//
+//            spindex.bigStepForward();
+//            transferTimer.resetTimer();
+//        }
+//
+//        if (transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME && shot1 && hasBalls) {
+//        kicker.kick();
+//        kicker.down();
+//
+//        totalBalls--;
+//
+//        spindex.bigStepForward();
+//        transferTimer.resetTimer();
+//
+//        shot2 = true;
+//        }
+//
+//        if (transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME && shot2 && hasBalls) {
+//            kicker.kick();
+//            kicker.down();
+//
+//            totalBalls--;
+//
+//            spindex.bigStepForward();
+//            transferTimer.resetTimer();
+//
+//            shot3 = true;
+//        }
+//
+//
+//
+//
+//    }
 
 
     public void colorTelemetry() {
-        telemetry.addData("Intake Red", intakeColor.getRed());
-        telemetry.addData("Intake Blue", intakeColor.getBlue());
-        telemetry.addData("Intake Green", intakeColor.getGreen());
+        telemetry.addData("Intake Red", intakeCD.getRed());
+        telemetry.addData("Intake Blue", intakeCD.getBlue());
+        telemetry.addData("Intake Green", intakeCD.getGreen());
 
-        telemetry.addData("Intake Hue", intakeColor.getHue());
-        telemetry.addData("Intake Saturation", intakeColor.getSat());
-        telemetry.addData("Intake Value", intakeColor.getVals());
+        telemetry.addData("Intake Hue", intakeCD.getHue());
+        telemetry.addData("Intake Saturation", intakeCD.getSat());
+        telemetry.addData("Intake Value", intakeCD.getVals());
 
-        telemetry.addData("Intake Distance", intakeColor.getDistance());
+        telemetry.addData("Intake Distance", intakeCD.getDistance());
 
-        telemetry.addData("Outtake Red", outtakeColor.getRed());
-        telemetry.addData("Outtake Blue", outtakeColor.getBlue());
-        telemetry.addData("Outtake Green", outtakeColor.getGreen());
 
-        telemetry.addData("Outtake Hue", outtakeColor.getHue());
-        telemetry.addData("Outtake Saturation", outtakeColor.getSat());
-        telemetry.addData("Outtake Value", outtakeColor.getVals());
 
-        telemetry.addData("Outtake Distance", outtakeColor.getDistance());
+//        telemetry.addData("Outtake Red", outtakeColor.getRed());
+//        telemetry.addData("Outtake Blue", outtakeColor.getBlue());
+//        telemetry.addData("Outtake Green", outtakeColor.getGreen());
+//
+//        telemetry.addData("Outtake Hue", outtakeColor.getHue());
+//        telemetry.addData("Outtake Saturation", outtakeColor.getSat());
+//        telemetry.addData("Outtake Value", outtakeColor.getVals());
+//
+//        telemetry.addData("Outtake Distance", outtakeColor.getDistance());
 
     }
+
+
+
 }

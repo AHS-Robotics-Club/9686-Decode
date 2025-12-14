@@ -14,13 +14,15 @@ public class Flywheel extends SubsystemBase {
 
         flywheel = hardwareMap.get(DcMotorEx.class, "fly");
 
-        flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
     @Override
     public void periodic() {
         // Always apply whatever power we currently want
         flywheel.setPower(commandedPower);
+
+
 
 
     }
