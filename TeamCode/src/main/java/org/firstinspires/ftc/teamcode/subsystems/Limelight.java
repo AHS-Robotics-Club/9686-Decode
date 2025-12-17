@@ -48,6 +48,10 @@ public class Limelight extends SubsystemBase {
         return hasTarget() ? lastResult.getTy() : 0.000;
     }
 
+    public double getTa() {
+        return hasTarget() ? lastResult.getTa() : 0.000;
+    }
+
     public Pose3D getBotPose() {
         return hasTarget() ? lastResult.getBotpose() : null;
     }

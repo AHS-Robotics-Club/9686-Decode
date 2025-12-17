@@ -64,6 +64,8 @@ public class Spindex extends SubsystemBase {
     public void nextIndex() {
         currentIndex = (currentIndex + 1) % positions.length;
         goToIndex(currentIndex);
+
+
     }
 
     public void previousIndex() {

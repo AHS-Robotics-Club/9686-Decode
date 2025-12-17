@@ -40,6 +40,7 @@ import kotlin.time.Instant;
 @TeleOp(name = "Nice Vision Test Op Mode")
 public class PPVisionOpmode extends CommandOpMode {
 
+
     private GamepadEx driverPad, gunnerPad;
     private Spindex spindex;
     private Kicker kicker;
@@ -60,7 +61,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
 
 
-   // private OuttakeColorSensor outtakeColor;
+    private OuttakeColorSensor outtakeColor;
 
     private IntakeColorSensor intakeCD;
 
@@ -102,7 +103,7 @@ public class PPVisionOpmode extends CommandOpMode {
         flywheel = new Flywheel(hardwareMap);
         hood = new Hood(hardwareMap);
         intakeCD = new IntakeColorSensor(hardwareMap);
-       // outtakeColor = new OuttakeColorSensor(hardwareMap);
+        outtakeColor = new OuttakeColorSensor(hardwareMap);
 
         transferTimer = new NanoTimer();
 
@@ -168,8 +169,8 @@ public class PPVisionOpmode extends CommandOpMode {
 
 
 
-        double flypwr = gamepad2.left_stick_y * -0.85;
-        flywheel.manual(flypwr);
+//        double flypwr = gamepad2.left_stick_y * -0.85;
+
 
         follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, false);
         follower.update();
@@ -214,28 +215,32 @@ public class PPVisionOpmode extends CommandOpMode {
         }
 
 
-        if (!counting && totalBalls < 3 && ballPresent) {
 
 
-            transferTimer.resetTimer();
-            counting = true;
+    //not working but closer'
 
-            pendingGreen = isGreen;
-            pendingPurple = isPurple;
-
-            spindex.bigStepForward();
-
-        }
-
-        if (counting && transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
-
-            if (pendingGreen) numGreenBalls++;
-            if (pendingPurple) numPurpleBalls++;
-
-            counting = false;      // Ready for the next ball
-            pendingGreen = false;
-            pendingPurple = false;
-        }
+//        if (!counting && totalBalls < 3 && ballPresent) {
+//
+//
+//            transferTimer.resetTimer();
+//            counting = true;
+//
+//            pendingGreen = isGreen;
+//            pendingPurple = isPurple;
+//
+//            spindex.bigStepForward();
+//
+//        }
+//
+//        if (counting && transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
+//
+//            if (pendingGreen) numGreenBalls++;
+//            if (pendingPurple) numPurpleBalls++;
+//
+//            counting = false;      // Ready for the next ball
+//            pendingGreen = false;
+//            pendingPurple = false;
+//        }
 
 
 
@@ -277,6 +282,9 @@ public class PPVisionOpmode extends CommandOpMode {
 
 
         if (result != null) {
+
+            flywheel.manualAuto(result.getTa(), (double)gamepad2.left_trigger);
+
             if (gamepad2.y && hasLL) {
                 turret.autoAim(result.getTx());
             } else {
@@ -304,6 +312,7 @@ public class PPVisionOpmode extends CommandOpMode {
             telemetry.addData("LL VALID", true);
             telemetry.addData("tx", result.getTx());
             telemetry.addData("ty", result.getTy());
+            telemetry.addData("ta", result.getTa());
             // Safe check for getBotpose() as well
             telemetry.addData("Botpose", result.getBotpose() != null ? result.getBotpose().toString() : "N/A");
         } else {
@@ -316,7 +325,8 @@ public class PPVisionOpmode extends CommandOpMode {
 // Spindex Telemetry
         telemetry.addData("Spindex Encoder", spindex.getCurrentPos());
         telemetry.addData("Target Spindex Position", spindex.getPidTarget());
-        telemetry.addData("Flypower", flypwr);
+        // telemetry.addData("Flypower", flypwr);
+        telemetry.addData("Velocity", flywheel.getVelocity());
 
 
         telemetry.addData("Total Balls", totalBalls);
@@ -405,15 +415,17 @@ public class PPVisionOpmode extends CommandOpMode {
 
 
 
-//        telemetry.addData("Outtake Red", outtakeColor.getRed());
-//        telemetry.addData("Outtake Blue", outtakeColor.getBlue());
-//        telemetry.addData("Outtake Green", outtakeColor.getGreen());
-//
-//        telemetry.addData("Outtake Hue", outtakeColor.getHue());
-//        telemetry.addData("Outtake Saturation", outtakeColor.getSat());
-//        telemetry.addData("Outtake Value", outtakeColor.getVals());
-//
-//        telemetry.addData("Outtake Distance", outtakeColor.getDistance());
+        telemetry.addData("Outtake Red", outtakeColor.getRed());
+        telemetry.addData("Outtake Blue", outtakeColor.getBlue());
+        telemetry.addData("Outtake Green", outtakeColor.getGreen());
+
+        telemetry.addData("Outtake Hue", outtakeColor.getHue());
+        telemetry.addData("Outtake Saturation", outtakeColor.getSat());
+        telemetry.addData("Outtake Value", outtakeColor.getVals());
+
+        telemetry.addData("Outtake Distance", outtakeColor.getDistance());
+
+        telemetry.addData("lefttriggerfatty", gamepad2.left_trigger);
 
     }
 
