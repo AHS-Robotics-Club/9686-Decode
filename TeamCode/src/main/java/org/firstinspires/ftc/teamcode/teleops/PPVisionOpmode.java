@@ -2,11 +2,7 @@ package org.firstinspires.ftc.teamcode.teleops;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 
-import android.hardware.HardwareBuffer;
-
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.InstantCommand;
-import com.arcrobotics.ftclib.command.Robot;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 //import com.bylazar.configurables.PanelsConfigurables;
@@ -14,14 +10,10 @@ import com.bylazar.configurables.PanelsConfigurables;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.NanoTimer;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.commands.AlwaysTrackCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
@@ -33,9 +25,6 @@ import org.firstinspires.ftc.teamcode.subsystems.Limelight;
 import org.firstinspires.ftc.teamcode.subsystems.OuttakeColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
-import org.firstinspires.ftc.teamcode.constants.RobotConstraints;
-
-import kotlin.time.Instant;
 
 @TeleOp(name = "Nice Vision Test Op Mode")
 public class PPVisionOpmode extends CommandOpMode {
@@ -283,7 +272,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
         if (result != null) {
 
-            flywheel.manualAuto(result.getTa(), (double)gamepad2.left_trigger);
+            flywheel.autoZone(result.getTa(), (double)gamepad2.left_trigger);
 
             if (gamepad2.y && hasLL) {
                 turret.autoAim(result.getTx());

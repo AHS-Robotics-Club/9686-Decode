@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDFController;
-import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -13,7 +12,11 @@ public class Flywheel extends SubsystemBase {
     private final DcMotorEx flywheel;
     private double commandedPower = -0.4;   // default idle power
 
-    private final double CLOSE_ZONE_TICKS = 1100;
+    private final double CLOSE_ZONE_TICKS = -1275;
+    private final double FAR_ZONE_TICKS = -1450;
+
+    private final double AMBIENT_TICKS = -800;
+
 
     private double currentVeloTicks = 0;
 
@@ -57,16 +60,16 @@ public class Flywheel extends SubsystemBase {
         flywheel.setPower(-0.875 * joystick);
     }
 
-    public void manualAuto(double tA, double leftTrigger) {
+    public void autoZone(double tA, double leftTrigger) {
 
 // first handle close zone
         if (leftTrigger != 0 && (tA >= 0.61 && tA <= 1.46)) {
-            targetVeloTicks = -1275;
+            targetVeloTicks = CLOSE_ZONE_TICKS;
         } else if (leftTrigger != 0 && (tA >= 0.26 && tA <= 0.45)) {
 
-            targetVeloTicks = -1450;
+            targetVeloTicks = FAR_ZONE_TICKS;
         } else {
-            targetVeloTicks = -800;
+            targetVeloTicks = AMBIENT_TICKS;
         }
 
         // If joystick is moved, scale between -0.2 and -1
