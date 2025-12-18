@@ -7,10 +7,16 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Kicker;
+import org.firstinspires.ftc.teamcode.subsystems.Spindex;
+
 @Config
 @TeleOp(name = "It gets to a point")
 
@@ -18,8 +24,13 @@ public class ShooterVelocityTest extends CommandOpMode {
 
 
     private DcMotorEx flywheel;
+
+    private Kicker kicker;
+
+    private Spindex spindex;
     private FtcDashboard dash;
 
+    private GamepadEx gunnerPad;
     public static double kP = 0.000455; // Default PID constants
     public static double kI = 0.0000000;
     public static double kD = 0.00000;
@@ -41,6 +52,11 @@ public class ShooterVelocityTest extends CommandOpMode {
     public void initialize() {
 
         flywheel = hardwareMap.get(DcMotorEx.class, "fly");
+        spindex = new Spindex(hardwareMap);
+
+        kicker = new Kicker(hardwareMap);
+
+        gunnerPad = new GamepadEx(gamepad2);
 
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -48,6 +64,20 @@ public class ShooterVelocityTest extends CommandOpMode {
         flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         dash = FtcDashboard.getInstance();
+
+        register(spindex);
+        register(kicker);
+
+        gunnerPad.getGamepadButton(GamepadKeys.Button.X).whenPressed(() -> {
+            kicker.down();
+            spindex.bigStepForward();
+
+        });
+        gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(() -> {
+            kicker.down();
+            spindex.stepForward();
+
+        });
 
     }
 
@@ -75,6 +105,13 @@ public class ShooterVelocityTest extends CommandOpMode {
 
 
         error = targetVeloTicks - currentVeloTicks;
+
+
+
+
+        if (gamepad2.a) kicker.kick();
+        else kicker.down();
+
 
 
 

@@ -40,7 +40,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
     private Limelight limelight;
 
-    private int numGreenBalls, numPurpleBalls, totalBalls;
+    private int totalBalls;
 
     private boolean lastGreen, lastPurple;
 
@@ -53,6 +53,49 @@ public class PPVisionOpmode extends CommandOpMode {
     private OuttakeColorSensor outtakeColor;
 
     private IntakeColorSensor intakeCD;
+
+    private enum IntakeState {
+        IDLE,
+        INDEXING,
+        CONFIRM,
+        WAIT_CLEAR
+    }
+
+    private IntakeState intakeState = IntakeState.IDLE;
+
+    private boolean pendingGreen = false;
+    private boolean pendingPurple = false;
+
+    private int numGreenBalls = 0;
+    private int numPurpleBalls = 0;
+
+    private NanoTimer intakeTimer = new NanoTimer();
+
+    /* ===================== Shoot FSM ===================== */
+    private enum ShootState {
+        IDLE,
+        ALIGNING,
+        KICKING,
+        WAIT_CLEAR
+    }
+
+    private ShootState shootState = ShootState.IDLE;
+    private NanoTimer shootTimer = new NanoTimer();
+
+    private boolean shootRequested = false;
+    private boolean isShooting = false;
+
+    /* ===================== Tunables ===================== */
+
+    // Intake
+    private static final double INTAKE_BALL_DISTANCE = 50.0;
+    private static final double GREEN_THRESHOLD = 0.0145;
+    private static final double SPINDEX_BIG_TIME = 0.28;
+
+    // Shooting
+    private static final double OUTTAKE_BALL_DISTANCE = 40.0;
+    private static final double SPINDEX_STEP_TIME = 0.22;
+    private static final double KICK_TIME = 0.12;
 
     @Override
     public void initialize() {
@@ -75,7 +118,7 @@ public class PPVisionOpmode extends CommandOpMode {
 //        limelight.start();
 
 
-        IMU imu = hardwareMap.get(IMU.class, "imu");
+        imu = hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
@@ -272,7 +315,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
         if (result != null) {
 
-            flywheel.autoZone(result.getTa(), (double)gamepad2.left_trigger);
+            flywheel.autoZone(result.getTa(), (double)gamepad1.left_trigger);
 
             if (gamepad2.y && hasLL) {
                 turret.autoAim(result.getTx());
@@ -294,6 +337,10 @@ public class PPVisionOpmode extends CommandOpMode {
 
 // Kicker (Manual Control)
         if (gamepad2.a) kicker.kick();
+        else kicker.down();
+
+
+        if (gamepad1.right_trigger != 0) kicker.kick();
         else kicker.down();
 
 // Limelight Telemetry (Safely Checked)

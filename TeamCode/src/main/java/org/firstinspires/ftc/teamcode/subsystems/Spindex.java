@@ -33,7 +33,7 @@ public class Spindex extends SubsystemBase {
     private int currentIndex = 0;
 
     // PID for manual fine movement
-    private PIDController spindexPID = new PIDController(0.000693, 0.00, 0.00004);
+    private PIDController spindexPID = new PIDController(0.0003207, 0.00, 0.0000141);
     private int pidTarget = 0;
 
     public Spindex(HardwareMap hardwareMap) {
@@ -138,6 +138,10 @@ public class Spindex extends SubsystemBase {
     public void fineRight() {
 
         pidTarget += 20;
+    }
+
+    public void setPidTarget(int newTarget) {
+        pidTarget = newTarget;
     }
 
     public void fineLeft() {

@@ -28,6 +28,8 @@ public class SpindexPidTuningOpMode extends CommandOpMode {
     public static double kI = 0.0000000;
     public static double kD = 0.00000;
 
+    public static int pidTarget = 0;
+
     @Override
     public void initialize() {
         // Initialize the Spindex subsystem
@@ -65,7 +67,7 @@ public class SpindexPidTuningOpMode extends CommandOpMode {
 
         // Get the current position and the target position
         int currentPosition = spindex.getCurrentPos();
-        int pidTarget = spindex.getPidTarget();
+        pidTarget = spindex.getPidTarget();
 
         // Calculate the PID error
         int error = pidTarget - currentPosition;

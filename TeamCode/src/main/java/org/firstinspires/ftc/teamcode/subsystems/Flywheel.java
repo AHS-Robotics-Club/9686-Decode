@@ -13,7 +13,7 @@ public class Flywheel extends SubsystemBase {
     private double commandedPower = -0.4;   // default idle power
 
     private final double CLOSE_ZONE_TICKS = -1275;
-    private final double FAR_ZONE_TICKS = -1450;
+    private final double FAR_ZONE_TICKS = -1500;
 
     private final double AMBIENT_TICKS = -800;
 
@@ -28,7 +28,7 @@ public class Flywheel extends SubsystemBase {
 
 
 
-    private PIDFController flyPIDF = new PIDFController(.009, 0, .0001, 0.000008);
+    private PIDFController flyPIDF = new PIDFController(.04, 0, .0001, 0.000008);
 
     public Flywheel(HardwareMap hardwareMap) {
 
