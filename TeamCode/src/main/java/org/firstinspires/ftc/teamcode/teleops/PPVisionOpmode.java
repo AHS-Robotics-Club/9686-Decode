@@ -15,6 +15,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.commands.AlwaysTrackCommand;
+import org.firstinspires.ftc.teamcode.commands.TimedKickCommand;
+import org.firstinspires.ftc.teamcode.constants.RobotConstraints;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
@@ -44,7 +46,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
     private boolean lastGreen, lastPurple;
 
-    private NanoTimer transferTimer;
+    private NanoTimer cycleTimer;
 
     private IMU imu;
 
@@ -137,7 +139,7 @@ public class PPVisionOpmode extends CommandOpMode {
         intakeCD = new IntakeColorSensor(hardwareMap);
         outtakeColor = new OuttakeColorSensor(hardwareMap);
 
-        transferTimer = new NanoTimer();
+        cycleTimer = new NanoTimer();
 
         driverPad = new GamepadEx(gamepad1);
         gunnerPad = new GamepadEx(gamepad2);
@@ -164,6 +166,8 @@ public class PPVisionOpmode extends CommandOpMode {
             spindex.stepForward();
             intake.cycle();
         });
+
+        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new TimedKickCommand(kicker));
 
         gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(kicker::kick);
         gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(kicker::down);
@@ -219,6 +223,7 @@ public class PPVisionOpmode extends CommandOpMode {
             imu.resetYaw();
         }
 
+        if (gamepad1.dpad_up) intake.expel();
         if (gamepad1.dpad_right) turret.spinRight();
         else if (gamepad1.dpad_left) turret.spinLeft();
         else turret.stop();
@@ -249,63 +254,16 @@ public class PPVisionOpmode extends CommandOpMode {
 
 
 
-    //not working but closer'
 
-//        if (!counting && totalBalls < 3 && ballPresent) {
-//
-//
-//            transferTimer.resetTimer();
-//            counting = true;
-//
-//            pendingGreen = isGreen;
-//            pendingPurple = isPurple;
-//
-//            spindex.bigStepForward();
-//
-//        }
-//
-//        if (counting && transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
-//
-//            if (pendingGreen) numGreenBalls++;
-//            if (pendingPurple) numPurpleBalls++;
-//
-//            counting = false;      // Ready for the next ball
-//            pendingGreen = false;
-//            pendingPurple = false;
-//        }
+        if (gamepad1.left_trigger != 0) {
 
+            isShooting = true;
+        } else if (gamepad1.left_trigger == 0) {
+            isShooting = false;
+        }
 
+        updateIntakeFSM();
 
-//        if (totalBalls < 3 && ballPresent && intakeCD.getGreen() > 0.015 && !lastGreen) {
-//
-//            transferTimer.resetTimer();
-//
-//            spindex.bigStepForward();
-//
-//            if (transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
-//
-//                numGreenBalls++;
-//            }
-//
-//
-//
-//            lastGreen = true;
-//
-//
-//
-//        }
-//
-//        if (totalBalls < 3 && intakeCD.getDistance() < 50 && !lastPurple) {
-//
-//            numPurpleBalls++;
-//
-//            spindex.bigStepForward();
-//
-//            lastPurple = true;
-//
-//            sleep(300);
-//
-//        }
 
 
 
@@ -330,18 +288,27 @@ public class PPVisionOpmode extends CommandOpMode {
         }
 
 
+
+
 // Hoodlime (Manual Control)
         if (gamepad2.dpad_up) hood.spinUp();
         else if (gamepad2.dpad_down) hood.spinDown();
         else hood.stop();
 
 // Kicker (Manual Control)
-        if (gamepad2.a) kicker.kick();
-        else kicker.down();
+//        if (gamepad2.a) kicker.kick();
+//        else kicker.down();
 
 
-        if (gamepad1.right_trigger != 0) kicker.kick();
-        else kicker.down();
+//        if (gamepad1.right_trigger != 0) kicker.kick();
+//        else kicker.down();
+
+        if (gamepad1.right_trigger != 0 && gamepad1.dpad_down && totalBalls() > 0) {
+
+            totalBalls = 0;
+            numGreenBalls = 0;
+            numPurpleBalls = 0;
+        }
 
 // Limelight Telemetry (Safely Checked)
         if (hasLL && result != null) {
@@ -464,6 +431,58 @@ public class PPVisionOpmode extends CommandOpMode {
         telemetry.addData("lefttriggerfatty", gamepad2.left_trigger);
 
     }
+
+
+    private void updateIntakeFSM() {
+        if (isShooting) return; // BLOCK intake while shooting
+
+        double distance = intakeCD.getDistance();
+        double green = intakeCD.getGreen();
+
+        boolean ballPresent = distance > 5 && distance < RobotConstraints.INTAKE_BALL_CHAMBERED_DISTANCE;
+        boolean isGreen = ballPresent && green > GREEN_THRESHOLD;
+
+        switch (intakeState) {
+            case IDLE:
+                if (ballPresent && totalBalls() < 3) {
+                    pendingGreen = isGreen;
+                    pendingPurple = !isGreen;
+
+                    spindex.bigStepForward();
+                    cycleTimer.resetTimer();
+
+                    intakeState = PPVisionOpmode.IntakeState.INDEXING;
+                }
+                break;
+
+            case INDEXING:
+                if (cycleTimer.getElapsedTime() >= RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
+                    intakeState = PPVisionOpmode.IntakeState.CONFIRM;
+                }
+                break;
+
+            case CONFIRM:
+                if (pendingGreen) numGreenBalls++;
+                if (pendingPurple) numPurpleBalls++;
+
+                pendingGreen = false;
+                pendingPurple = false;
+
+                intakeState = PPVisionOpmode.IntakeState.WAIT_CLEAR;
+                break;
+
+            case WAIT_CLEAR:
+                if (!ballPresent) {
+                    intakeState = PPVisionOpmode.IntakeState.IDLE;
+                }
+                break;
+        }
+    }
+
+    private int totalBalls() {
+        return numGreenBalls + numPurpleBalls;
+    }
+
 
 
 

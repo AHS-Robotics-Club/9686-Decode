@@ -76,6 +76,12 @@ public class Flywheel extends SubsystemBase {
 
     }
 
+    public void setTargetVeloTicks(double pidTarget) {
+
+        targetVeloTicks = pidTarget;
+
+    }
+
 
 
     public double getVelocity() {

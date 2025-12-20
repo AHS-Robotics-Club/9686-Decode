@@ -5,6 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.pedropathing.util.NanoTimer;
 
+import org.firstinspires.ftc.teamcode.constants.RobotConstraints;
+import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeColorSensor;
@@ -18,6 +21,10 @@ public class BallCountFSMCommandTest extends CommandOpMode {
     private Kicker kicker;
     private IntakeColorSensor intakeCD;
     private OuttakeColorSensor outtakeCD;
+
+    private Intake intake;
+
+    private Flywheel flywheel;
 
     /* ===================== Intake FSM ===================== */
     private enum IntakeState {
@@ -34,32 +41,33 @@ public class BallCountFSMCommandTest extends CommandOpMode {
     private int numGreenBalls = 0;
     private int numPurpleBalls = 0;
 
-    private NanoTimer intakeTimer = new NanoTimer();
+    private NanoTimer cycleTimer = new NanoTimer();
 
     /* ===================== Shoot FSM ===================== */
     private enum ShootState {
         IDLE,
         ALIGNING,
+        SMALL_ALIGNING,
         KICKING,
         WAIT_CLEAR
     }
     private ShootState shootState = ShootState.IDLE;
-    private NanoTimer shootTimer = new NanoTimer();
+    private NanoTimer kickTimer = new NanoTimer();
 
     private boolean shootRequested = false;
     private boolean isShooting = false;
-    private boolean kickerDownComplete = false;
+
 
     /* ===================== Tunables ===================== */
     private static final double INTAKE_BALL_DISTANCE = 50.0;
     private static final double GREEN_THRESHOLD = 0.0145;
-    private static final double SPINDEX_BIG_TIME = 0.28;
+    private static final double SPINDEX_BIG_TIME = 300;
 
     private static final double OUTTAKE_BALL_DISTANCE = 40.0;
     private static final double SPINDEX_STEP_TIME = 0.22;
-    private static final double KICK_TIME = 0.12;
+    private static final double KICK_TIME = 120;
 
-    private static final double KICKER_DOWN_TIME = 0.15;
+    private static final double KICKER_DOWN_TIME = 150;
 
     @Override
     public void initialize() {
@@ -67,9 +75,15 @@ public class BallCountFSMCommandTest extends CommandOpMode {
         kicker = new Kicker(hardwareMap);
         intakeCD = new IntakeColorSensor(hardwareMap);
         outtakeCD = new OuttakeColorSensor(hardwareMap);
+        intake = new Intake(hardwareMap);
+        flywheel = new Flywheel(hardwareMap);
 
         register(spindex);
         register(kicker);
+        register(intake);
+        register(intakeCD);
+        register(outtakeCD);
+        register(flywheel);
 
         telemetry.addLine("Ball Manager FSM Full Test READY");
         telemetry.update();
@@ -87,17 +101,21 @@ public class BallCountFSMCommandTest extends CommandOpMode {
         updateShootFSM();
         updateIntakeFSM();
         sendTelemetry();
+
+        flywheel.setTargetVeloTicks(-800);
+
+
     }
 
     /* ===================== Intake FSM ===================== */
-    private void updateIntakeFSM() {
-        if (isShooting) return; // BLOCK intake while shooting
+        private void updateIntakeFSM() {
+            if (isShooting) return; // BLOCK intake while shooting
 
-        double distance = intakeCD.getDistance();
-        double green = intakeCD.getGreen();
+            double distance = intakeCD.getDistance();
+            double green = intakeCD.getGreen();
 
-        boolean ballPresent = distance > 5 && distance < INTAKE_BALL_DISTANCE;
-        boolean isGreen = ballPresent && green > GREEN_THRESHOLD;
+            boolean ballPresent = distance > 5 && distance < INTAKE_BALL_DISTANCE;
+            boolean isGreen = ballPresent && green > GREEN_THRESHOLD;
 
         switch (intakeState) {
             case IDLE:
@@ -106,14 +124,14 @@ public class BallCountFSMCommandTest extends CommandOpMode {
                     pendingPurple = !isGreen;
 
                     spindex.bigStepForward();
-                    intakeTimer.resetTimer();
+                    cycleTimer.resetTimer();
 
                     intakeState = IntakeState.INDEXING;
                 }
                 break;
 
             case INDEXING:
-                if (intakeTimer.getElapsedTime() >= SPINDEX_BIG_TIME) {
+                if (cycleTimer.getElapsedTime() >= RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
                     intakeState = IntakeState.CONFIRM;
                 }
                 break;
@@ -138,66 +156,94 @@ public class BallCountFSMCommandTest extends CommandOpMode {
 
     /* ===================== Shoot FSM ===================== */
     private void updateShootFSM() {
-        boolean ballInChamber = outtakeCD.getDistance() < OUTTAKE_BALL_DISTANCE;
         boolean hasBalls = totalBalls() > 0;
 
         switch (shootState) {
             case IDLE:
+                if (isShooting) break;
+
                 if (shootRequested && hasBalls) {
                     isShooting = true;
                     shootRequested = false;
-                    kickerDownComplete = false;
+
+                    boolean ballInChamber = outtakeCD.getDistance() < RobotConstraints.OUTTAKE_BALL_POSITION_DISTANCE;
 
                     if (!ballInChamber) {
+                        // Need to move spindex to bring next ball into chamber
                         spindex.stepForward();
-                        shootTimer.resetTimer(); // start ALIGNING wait
-                        shootState = ShootState.ALIGNING;
+                        cycleTimer.resetTimer(); // timer for spindex rotation
+                        shootState = ShootState.SMALL_ALIGNING;
+
+                        telemetry.addLine("IDLE -> SMALL_ALIGNING");
                     } else {
+                        // Ball already in chamber, kick immediately
                         kicker.kick();
-                        shootTimer.resetTimer(); // start KICKING wait
+                        kickTimer.resetTimer(); // timer for kicker extension
                         shootState = ShootState.KICKING;
+
+                        telemetry.addLine("IDLE -> KICKING");
                     }
+                }
+                break;
+
+            case SMALL_ALIGNING:
+                if (cycleTimer.getElapsedTime() >= RobotConstraints.SPINDEX_60_DEG_ROT_TIME) {
+                    kicker.kick();
+                    kickTimer.resetTimer();
+                    shootState = ShootState.KICKING;
+
+                    telemetry.addLine("SMALL_ALIGNING -> KICKING");
                 }
                 break;
 
             case ALIGNING:
-                // Wait for spindex to physically rotate
-                if (shootTimer.getElapsedTime() >= SPINDEX_STEP_TIME) {
+                if (cycleTimer.getElapsedTime() >= RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
                     kicker.kick();
-                    shootTimer.resetTimer(); // start KICKING wait
+                    kickTimer.resetTimer();
                     shootState = ShootState.KICKING;
+
+                    telemetry.addLine("ALIGNING -> KICKING");
                 }
                 break;
 
             case KICKING:
-                // Wait for kicker to fully extend
-                if (shootTimer.getElapsedTime() >= KICK_TIME) {
+                if (kickTimer.getElapsedTime() >= RobotConstraints.KICKER_KICK_TIME) {
                     kicker.down();
-                    shootTimer.resetTimer(); // start WAIT_CLEAR delay for kicker down
+                    kickTimer.resetTimer(); // wait for kicker down
                     shootState = ShootState.WAIT_CLEAR;
+
+                    telemetry.addLine("KICKING -> WAIT_CLEAR");
                 }
                 break;
 
             case WAIT_CLEAR:
-                // Wait for kicker to be fully down
-                if (!kickerDownComplete && shootTimer.getElapsedTime() >= KICKER_DOWN_TIME) {
-                    decrementBallCount(); // only once
-                    kickerDownComplete = true;
+                boolean ballCleared = outtakeCD.getDistance() >= RobotConstraints.OUTTAKE_BALL_POSITION_DISTANCE;
+
+                // Only decrement once per shot
+                if (ballCleared && hasBalls) {
+                    decrementBallCount();
+                    telemetry.addLine("Ball decremented");
                 }
 
-                // Wait for chamber to be clear before returning to IDLE
-                if (kickerDownComplete && !ballInChamber) {
-                    if (hasBalls) {
-                        shootRequested = true; // auto-continue shooting
+                if (ballCleared) {
+                    if (totalBalls() > 0) {
+                        // More balls remaining, advance spindex and align
+                        spindex.bigStepForward();
+                        cycleTimer.resetTimer();
+                        shootState = ShootState.ALIGNING;
+
+                        telemetry.addLine("WAIT_CLEAR -> ALIGNING");
                     } else {
-                        isShooting = false; // unlock intake
+                        // Done shooting
+                        isShooting = false;
+                        shootState = ShootState.IDLE;
+
+                        telemetry.addLine("WAIT_CLEAR -> IDLE");
                     }
-                    shootState = ShootState.IDLE;
                 }
                 break;
         }
     }
-
     /* ===================== Helpers ===================== */
     private int totalBalls() {
         return numGreenBalls + numPurpleBalls;

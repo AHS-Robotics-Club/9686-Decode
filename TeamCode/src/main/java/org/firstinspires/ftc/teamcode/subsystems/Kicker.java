@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 //ball on kicker at 0.707
 
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.pedropathing.util.NanoTimer;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -12,8 +13,12 @@ public class Kicker extends SubsystemBase {
 
     private ServoImplEx kicker;
 
+    private NanoTimer kickTimer;
+
     public Kicker (HardwareMap hardwareMap) {
         this.kicker = hardwareMap.get(ServoImplEx.class, "kicker"); //Expansion 5
+
+        kickTimer = new NanoTimer();
     }
 
     @Override
@@ -26,7 +31,14 @@ public class Kicker extends SubsystemBase {
     }
 
     public void down() {
-        kicker.setPosition(0.55);
+        kicker.setPosition(0.49);
+    }
+
+
+    public void timedKick() {
+
+
+
     }
 
 

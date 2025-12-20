@@ -6,10 +6,12 @@ public class RobotConstraints {
 
             //these are in millis, used for timing capability FIND!
 
-    SPINDEX_120_DEG_ROT_TIME = 600,
-    SPINDEX_60_DEG_ROT_TIME = 300,
-    KICKER_KICK_TIME = 100,
-    KICKER_DOWN_TIME = 100,
+    SPINDEX_120_DEG_ROT_TIME = 3000, //550
+    SPINDEX_60_DEG_ROT_TIME = 3000, //300
+    KICKER_KICK_TIME = 100, //200
+    KICKER_DOWN_TIME = 3000, //200
+
+
 
     //these are in MM, to be found experimentally later
 
@@ -17,7 +19,7 @@ public class RobotConstraints {
 
     INTAKE_POSITION_NO_BALL_THRESH = 60,
 
-    OUTTAKE_BALL_POSITION_DISTANCE = 400;
+    OUTTAKE_BALL_POSITION_DISTANCE = 60;
 
 
 

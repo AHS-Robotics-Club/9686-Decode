@@ -24,6 +24,7 @@ public class OuttakeColorSensor extends SubsystemBase {
         this.outtakeCD = hardwareMap.get(RevColorSensorV3.class, "outtakeColor");
 
         this.colors = outtakeCD.getNormalizedColors();
+        outtakeCD.setGain(8);
 
 
     }

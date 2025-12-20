@@ -137,7 +137,7 @@ public class Spindex extends SubsystemBase {
 
     public void fineRight() {
 
-        pidTarget += 20;
+        pidTarget += 40;
     }
 
     public void setPidTarget(int newTarget) {
@@ -146,7 +146,7 @@ public class Spindex extends SubsystemBase {
 
     public void fineLeft() {
 
-        pidTarget -= 20;
+        pidTarget -= 40;
     }
 }
 
