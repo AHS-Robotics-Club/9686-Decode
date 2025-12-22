@@ -166,7 +166,7 @@ public class BallCountFSMCommandTest extends CommandOpMode {
                     isShooting = true;
                     shootRequested = false;
 
-                    boolean ballInChamber = outtakeCD.getDistance() < RobotConstraints.OUTTAKE_BALL_POSITION_DISTANCE;
+                    boolean ballInChamber = outtakeCD.getDistance() < RobotConstraints.OUTTAKE_BALL_POSITION_THRESH;
 
                     if (!ballInChamber) {
                         // Need to move spindex to bring next ball into chamber
@@ -217,7 +217,7 @@ public class BallCountFSMCommandTest extends CommandOpMode {
                 break;
 
             case WAIT_CLEAR:
-                boolean ballCleared = outtakeCD.getDistance() >= RobotConstraints.OUTTAKE_BALL_POSITION_DISTANCE;
+                boolean ballCleared = outtakeCD.getDistance() >= RobotConstraints.OUTTAKE_BALL_POSITION_THRESH;
 
                 // Only decrement once per shot
                 if (ballCleared && hasBalls) {

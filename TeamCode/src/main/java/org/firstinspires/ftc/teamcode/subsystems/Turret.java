@@ -74,4 +74,6 @@ public class Turret extends SubsystemBase {
     // Manual overrides
     public void spinRight() { turret.setPower(0.5); }
     public void spinLeft() { turret.setPower(-0.5); }
+    public void manual(double power) { turret.setPower(power); }
+
 }

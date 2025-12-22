@@ -60,21 +60,32 @@ public class Flywheel extends SubsystemBase {
         flywheel.setPower(-0.875 * joystick);
     }
 
-    public void autoZone(double tA, double leftTrigger) {
+    public void flyWheelVelo( double leftTrigger, int numBalls) {
 
 // first handle close zone
-        if (leftTrigger != 0 && (tA >= 0.61 && tA <= 1.46)) {
+        if (leftTrigger != 0 || numBalls == 3) {
             targetVeloTicks = CLOSE_ZONE_TICKS;
-        } else if (leftTrigger != 0 && (tA >= 0.26 && tA <= 0.45)) {
-
-            targetVeloTicks = FAR_ZONE_TICKS;
-        } else {
-            targetVeloTicks = AMBIENT_TICKS;
+        } else { targetVeloTicks = AMBIENT_TICKS;
         }
 
         // If joystick is moved, scale between -0.2 and -1
 
     }
+
+
+    public void farZone( double leftTrigger, int numBalls, double tA) {
+
+// first handle close zone
+        if  (numBalls == 3 && (tA >= 0.26 && tA <= 0.45)) {
+
+            targetVeloTicks = FAR_ZONE_TICKS;
+        }
+
+        // If joystick is moved, scale between -0.2 and -1
+
+    }
+
+
 
     public void setTargetVeloTicks(double pidTarget) {
 
