@@ -1,36 +1,28 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
-import com.arcrobotics.ftclib.command.WaitCommand;
 
-import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
-import org.firstinspires.ftc.teamcode.subsystems.IntakeColorSensor;
-import org.firstinspires.ftc.teamcode.subsystems.OuttakeColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
+import org.firstinspires.ftc.teamcode.subsystems.OuttakeColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 
 
 /* srihaasa is very intelligent
 */
 
-public class EmptyChamberCommand extends SequentialCommandGroup {
-    public EmptyChamberCommand(Kicker kicker, Spindex spindex, OuttakeColorSensor outtakeCD)
+public class ShootGPPCommand extends SequentialCommandGroup {
+    public ShootGPPCommand(Kicker kicker, Spindex spindex, OuttakeColorSensor outtakeCD)
     {
 
 
         addCommands(
                 new CheckOuttakeAlignmentCommand(spindex, outtakeCD),
-                new WaitCommand(2),
+                new GoToGreenCommand(spindex, outtakeCD),
                 new TimedKickCommand(kicker),
-                new WaitCommand(2),
-                new TimedBigStepCommand(spindex),
-
+                new GoToPurpleCommand(spindex, outtakeCD),
                 new TimedKickCommand(kicker),
-
-                new TimedBigStepCommand(spindex),
-
+                new GoToPurpleCommand(spindex, outtakeCD),
                 new TimedKickCommand(kicker),
-
                 new TimedSmallStepCommand(spindex)
         );
         addRequirements(kicker, spindex, outtakeCD);

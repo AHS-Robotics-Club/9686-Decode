@@ -72,8 +72,6 @@ public class TimedKickCommand extends CommandBase {
     private final NanoTimer downTimer = new NanoTimer();
 
 
-
-
     private enum State {
         KICKING,
         LOWERING
@@ -81,32 +79,73 @@ public class TimedKickCommand extends CommandBase {
 
     private State state;
 
+    private boolean hasKicked = false;
+
     public TimedKickCommand(Kicker subsystem) {
         kicker = subsystem;
         addRequirements(kicker);
     }
 
+//    @Override
+//    public void initialize() {
+//        kicker.kick();
+//        kickTimer.resetTimer();
+//        state = State.KICKING;
+//    }
+//
+//    @Override
+//    public void execute() {
+//        switch (state) {
+//            case KICKING:
+//                if (kickTimer.getElapsedTime(TimeUnit.MILLISECONDS)
+//                        >= RobotConstraints.KICKER_KICK_TIME) {
+//                    hasKicked = true;
+//                    kicker.down();
+//                    downTimer.resetTimer();
+//                    state = State.LOWERING;
+//                }
+//                break;
+//
+//            case LOWERING:
+//                // nothing to do, just wait
+//                break;
+//        }
+//    }
+//
+//    @Override
+//    public boolean isFinished() {
+//        return state == State.LOWERING &&
+//                downTimer.getElapsedTime(TimeUnit.MILLISECONDS)
+//                        >= RobotConstraints.KICKER_DOWN_TIME && hasKicked;
+//    }
+//}
+
     @Override
     public void initialize() {
-        kicker.kick();
-        kickTimer.resetTimer();
         state = State.KICKING;
+        kickTimer.resetTimer();
+        hasKicked = false;
     }
 
     @Override
     public void execute() {
         switch (state) {
+
             case KICKING:
+                kicker.kick();  // ← APPLY EVERY LOOP
+
                 if (kickTimer.getElapsedTime(TimeUnit.MILLISECONDS)
                         >= RobotConstraints.KICKER_KICK_TIME) {
+
                     kicker.down();
                     downTimer.resetTimer();
                     state = State.LOWERING;
+                    hasKicked = true;
                 }
                 break;
 
             case LOWERING:
-                // nothing to do, just wait
+                kicker.down();  // ← HOLD DOWN EVERY LOOP
                 break;
         }
     }
@@ -115,6 +154,6 @@ public class TimedKickCommand extends CommandBase {
     public boolean isFinished() {
         return state == State.LOWERING &&
                 downTimer.getElapsedTime(TimeUnit.MILLISECONDS)
-                        >= RobotConstraints.KICKER_DOWN_TIME;
+                        >= RobotConstraints.KICKER_DOWN_TIME && hasKicked;
     }
 }

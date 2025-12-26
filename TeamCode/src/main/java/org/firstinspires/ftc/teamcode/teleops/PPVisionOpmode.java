@@ -29,6 +29,8 @@ import org.firstinspires.ftc.teamcode.subsystems.OuttakeColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
+import java.util.concurrent.TimeUnit;
+
 @TeleOp(name = "Nice Vision Test Op Mode")
 public class PPVisionOpmode extends CommandOpMode {
 
@@ -59,6 +61,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
     private enum IntakeState {
         IDLE,
+        READING,
         INDEXING,
         CONFIRM,
         WAIT_CLEAR
@@ -74,6 +77,13 @@ public class PPVisionOpmode extends CommandOpMode {
 
     private NanoTimer intakeTimer = new NanoTimer();
 
+
+    public char[] ppg = {'P', 'P', 'G'};
+    public char[] pgp = {'P', 'G', 'P'};
+    public char[] gpp = {'G', 'P', 'P'};
+
+
+
     /* ===================== Shoot FSM ===================== */
     private enum ShootState {
         IDLE,
@@ -83,7 +93,7 @@ public class PPVisionOpmode extends CommandOpMode {
     }
 
     private ShootState shootState = ShootState.IDLE;
-    private NanoTimer shootTimer = new NanoTimer();
+    private NanoTimer readingTimer = new NanoTimer();
 
     private boolean shootRequested = false;
     private boolean isShooting = false;
@@ -141,6 +151,7 @@ public class PPVisionOpmode extends CommandOpMode {
         outtakeColor = new OuttakeColorSensor(hardwareMap);
 
         cycleTimer = new NanoTimer();
+        readingTimer = new NanoTimer();
 
         driverPad = new GamepadEx(gamepad1);
         gunnerPad = new GamepadEx(gamepad2);
@@ -443,23 +454,41 @@ public class PPVisionOpmode extends CommandOpMode {
         if (isShooting) return; // BLOCK intake while shooting
 
         double distance = intakeCD.getDistance();
-        double green = intakeCD.getGreen();
+        double hue = intakeCD.getHue();
 
         boolean ballPresent = distance > 5 && distance < RobotConstraints.INTAKE_BALL_CHAMBERED_DISTANCE;
-        boolean isGreen = ballPresent && green > GREEN_THRESHOLD;
+        boolean isGreen = ballPresent && hue < RobotConstraints.OUTTAKE_GREEN_BALL_HUE_THRESH;
 
         switch (intakeState) {
             case IDLE:
                 if (ballPresent && totalBalls() < 3) {
-                    pendingGreen = isGreen;
-                    pendingPurple = !isGreen;
 
+
+                    readingTimer.resetTimer();
+                    intakeState = IntakeState.READING;
+
+
+                }
+                break;
+
+
+            case READING:
+
+                pendingGreen = isGreen;
+                pendingPurple = !isGreen;
+
+                if (readingTimer.getElapsedTime(TimeUnit.MILLISECONDS) >= RobotConstraints.INTAKE_CD_READING_TIME) {
                     spindex.bigStepForward();
                     cycleTimer.resetTimer();
 
+
                     intakeState = PPVisionOpmode.IntakeState.INDEXING;
+
                 }
+
                 break;
+
+
 
             case INDEXING:
                 if (cycleTimer.getElapsedTime() >= RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
