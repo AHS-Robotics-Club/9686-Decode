@@ -19,7 +19,7 @@ public class Limelight extends SubsystemBase {
         limelight.setPollRateHz(90);
         // Low latency (11ms) update rate
         limelight.start();
-        limelight.pipelineSwitch(0);   // AprilTag pipeline
+        limelight.pipelineSwitch(2);   // AprilTag pipeline
     }
 
     @Override
@@ -67,4 +67,6 @@ public class Limelight extends SubsystemBase {
     public void switchPipelineBlue() {
         limelight.pipelineSwitch(1);
     }
+
+    public void switchMotifDetection() {limelight.pipelineSwitch(2); }
 }

@@ -270,6 +270,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
 
 
+
         if (gamepad1.left_trigger != 0) {
 
             isShooting = true;
@@ -330,6 +331,8 @@ public class PPVisionOpmode extends CommandOpMode {
 
 // Limelight Telemetry (Safely Checked)
         if (hasLL && result != null) {
+            telemetry.addData("Motif Index", result.getPipelineIndex());
+            telemetry.addData("Fiducial Data", result.getFiducialResults());
             telemetry.addData("LL VALID", true);
             telemetry.addData("tx", result.getTx());
             telemetry.addData("ty", result.getTy());
