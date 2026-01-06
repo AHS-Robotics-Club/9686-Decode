@@ -30,7 +30,7 @@ public class LimelightPIDTest extends CommandOpMode {
     public Turret turret;
     private FtcDashboard dash;
 
-    private double currentTx = 0;
+    public static double currentTx = 0;
 
     private GamepadEx gunnerPad;
     public static double kP = 0.000; // Default PID constants
@@ -50,6 +50,9 @@ public class LimelightPIDTest extends CommandOpMode {
     public void initialize() {
 
         gunnerPad = new GamepadEx(gamepad2);
+
+        limelight = new Limelight(hardwareMap);
+        turret = new Turret(hardwareMap);
 
         dash = FtcDashboard.getInstance();
 
@@ -72,50 +75,39 @@ public class LimelightPIDTest extends CommandOpMode {
     public void run() {
         LLResult result = limelight.getRawResult();
 
+        boolean hasTarget = limelight.hasTarget();
 
-        if (result != null) {
+        if (hasTarget && result != null) {
             currentTx = result.getTx();
+            output = limelightP.calculate(currentTx, 0);
+            turret.manual(output);
+        } else {
+            output = 0;
+            turret.manual(0); // Stop turret if no target
         }
-
-
-        output = limelightP.calculate(currentTx, 0);
-
-        turret.manual(output);
 
         limelightP.setP(kP);
 
-        if (gamepad1.y) {
+        if (gamepad1.y) limelight.switchPipelineRed();
+        if (gamepad1.b) limelight.switchPipelineBlue();
 
-
-
-            limelight.switchPipelineRed();
-
-        }
-
-        if (gamepad1.b) {
-            limelight.switchPipelineBlue();
-        }
-
-
-
-        telemetry.update();
-
+        // Dashboard telemetry
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("zero", 0);
         packet.put("PID kP", kP);
-//        packet.put("PID kI", kI);
-//        packet.put("PID kD", kD);
+        packet.put("currentTx", currentTx);
 
-        if (result != null) {
-            packet.put("ta", result.getTa());
-            packet.put("ty", result.getTy());
+        if (hasTarget && result != null) {
             packet.put("tx", result.getTx());
-            packet.put("Error", error);
+            packet.put("ty", result.getTy());
+            packet.put("ta", result.getTa());
+        } else {
+            packet.put("tx", "No Target");
+            packet.put("ty", "No Target");
+            packet.put("ta", "No Target");
         }
+
         dash.sendTelemetryPacket(packet);
-
-
+        telemetry.update();
     }
-
 
 }

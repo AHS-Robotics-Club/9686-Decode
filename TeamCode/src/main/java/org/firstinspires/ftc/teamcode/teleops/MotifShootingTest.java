@@ -59,6 +59,16 @@ public class MotifShootingTest extends CommandOpMode {
                 .whenPressed(new MotifCommand(spindex, kicker, outtakeCD, gpp));
 
 
+        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN)
+                .whenPressed(new ShootPPGCommand(kicker, spindex, outtakeCD));
+
+        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT)
+                .whenPressed(new ShootPGPCommand(kicker, spindex, outtakeCD));
+
+        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT)
+                .whenPressed(new ShootGPPCommand(kicker, spindex, outtakeCD));
+
+
 
     }
 

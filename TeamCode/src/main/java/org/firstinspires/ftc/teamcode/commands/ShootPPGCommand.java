@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.subsystems.OuttakeColorSensor;
@@ -16,6 +17,7 @@ public class ShootPPGCommand extends SequentialCommandGroup {
 
 
         addCommands(
+                new WaitCommand(100),
                 new CheckOuttakeAlignmentCommand(spindex, outtakeCD),
                 new GoToPurpleCommand(spindex, outtakeCD),
                 new TimedKickCommand(kicker),

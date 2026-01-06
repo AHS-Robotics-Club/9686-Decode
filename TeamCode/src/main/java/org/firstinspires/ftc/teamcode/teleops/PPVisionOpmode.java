@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.commands.AlwaysTrackCommand;
 import org.firstinspires.ftc.teamcode.commands.EmptyChamberCommand;
+import org.firstinspires.ftc.teamcode.commands.MotifCommand;
 import org.firstinspires.ftc.teamcode.commands.TimedKickCommand;
 import org.firstinspires.ftc.teamcode.constants.RobotConstraints;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -181,7 +182,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
         driverPad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new TimedKickCommand(kicker));
 
-        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new EmptyChamberCommand(kicker, spindex, outtakeColor));
+        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, ppg));
 
         gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(kicker::kick);
         gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(kicker::down);
