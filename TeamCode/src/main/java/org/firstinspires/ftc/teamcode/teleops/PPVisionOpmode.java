@@ -187,10 +187,13 @@ public class PPVisionOpmode extends CommandOpMode {
         });
 
         driverPad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new TimedKickCommand(kicker));
-        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, motif));
+
 
         gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(kicker::kick);
         gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(kicker::down);
+
+
+
 
         register(flywheel);
         register(spindex);
@@ -358,21 +361,28 @@ public class PPVisionOpmode extends CommandOpMode {
 
                     if (!motifIDdetected) {
                         tagID = fiducial.getFiducialId();
-                        telemetry.addData("tagID", tagID);
+
                         motifIDdetected = true;
-                        if (tagID == 21) {
-                            motif = gpp;
-                        } else if (tagID == 22) {
-                            motif = pgp;
-                        } else {
-                            motif = ppg;
-                        }
+
                     }
                 }
             } else {
                 telemetry.addLine("No AprilTags detected");
             }
 
+        }
+
+
+
+        if (tagID == 21) {
+            motif = gpp;
+            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, gpp));
+        } else if (tagID == 22) {
+            motif = pgp;
+            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, pgp));
+        } else {
+            motif = ppg;
+            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, ppg));
         }
 
 
@@ -401,6 +411,9 @@ public class PPVisionOpmode extends CommandOpMode {
         telemetry.addData("Velocity", flywheel.getVelocity());
 
 
+
+        telemetry.addData("tagID", tagID);
+        telemetry.addData("Motif based on obelisk", motif);
         telemetry.addData("Total Balls", totalBalls);
         telemetry.addData("G Balls", numGreenBalls);
         telemetry.addData("P Balls", numPurpleBalls);
