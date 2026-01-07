@@ -10,6 +10,7 @@ import com.bylazar.configurables.PanelsConfigurables;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.NanoTimer;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -30,6 +31,8 @@ import org.firstinspires.ftc.teamcode.subsystems.OuttakeColorSensor;
 import org.firstinspires.ftc.teamcode.subsystems.Spindex;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @TeleOp(name = "Nice Vision Test Op Mode")
@@ -47,6 +50,9 @@ public class PPVisionOpmode extends CommandOpMode {
     private Limelight limelight;
 
     private int totalBalls;
+    private int tagID = 0;
+
+    private boolean motifIDdetected = false;
 
     private boolean lastGreen, lastPurple;
 
@@ -78,10 +84,10 @@ public class PPVisionOpmode extends CommandOpMode {
 
     private NanoTimer intakeTimer = new NanoTimer();
 
-
     public char[] ppg = {'P', 'P', 'G'};
     public char[] pgp = {'P', 'G', 'P'};
     public char[] gpp = {'G', 'P', 'P'};
+    public char[] motif = {};
 
 
 
@@ -181,8 +187,7 @@ public class PPVisionOpmode extends CommandOpMode {
         });
 
         driverPad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new TimedKickCommand(kicker));
-
-        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, ppg));
+        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, motif));
 
         gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(kicker::kick);
         gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(kicker::down);
@@ -294,7 +299,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
             flywheel.farZone((double)gamepad1.left_trigger, totalBalls, result.getTa());
 
-            if (gamepad2.y && hasLL) {
+            if (hasLL) {
                 turret.autoAim(result.getTx());
             } else {
                 if (gamepad1.dpad_right) turret.spinRight();
@@ -329,10 +334,53 @@ public class PPVisionOpmode extends CommandOpMode {
             numPurpleBalls = 0;
         }
 
+        if (hasLL && result != null) {
+
+
+            telemetry.addData("Pipeline Index", result.getPipelineIndex());
+            telemetry.addData("LL VALID", true);
+            telemetry.addData("tx", result.getTx());
+            telemetry.addData("ty", result.getTy());
+            telemetry.addData("ta", result.getTa());
+
+            List<LLResultTypes.FiducialResult> fiducials =
+                    result.getFiducialResults();
+
+            if (!fiducials.isEmpty()) {
+                for (LLResultTypes.FiducialResult fiducial : fiducials) {
+                    telemetry.addData(
+                            "AprilTag",
+                            "ID: %d | Tx: %.2f | Ty: %.2f",
+                            fiducial.getFiducialId(),
+                            result.getTx(),
+                            result.getTy()
+                    );
+
+                    if (!motifIDdetected) {
+                        tagID = fiducial.getFiducialId();
+                        telemetry.addData("tagID", tagID);
+                        motifIDdetected = true;
+                        if (tagID == 21) {
+                            motif = gpp;
+                        } else if (tagID == 22) {
+                            motif = pgp;
+                        } else {
+                            motif = ppg;
+                        }
+                    }
+                }
+            } else {
+                telemetry.addLine("No AprilTags detected");
+            }
+
+        }
+
+
+
 // Limelight Telemetry (Safely Checked)
         if (hasLL && result != null) {
-            telemetry.addData("Motif Index", result.getPipelineIndex());
-            telemetry.addData("Fiducial Data", result.getFiducialResults());
+            telemetry.addData("Pipeline Index", result.getPipelineIndex());
+//            telemetry.addData("Apriltag ID", fiducials.get);
             telemetry.addData("LL VALID", true);
             telemetry.addData("tx", result.getTx());
             telemetry.addData("ty", result.getTy());
