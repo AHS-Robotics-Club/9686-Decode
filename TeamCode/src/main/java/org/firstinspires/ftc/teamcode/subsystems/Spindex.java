@@ -1,12 +1,17 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.teamcode.commands.EmptyChamberCommand;
+import org.firstinspires.ftc.teamcode.commands.MotifCommand;
 
 public class Spindex extends SubsystemBase {
 
@@ -18,6 +23,10 @@ public class Spindex extends SubsystemBase {
     // 1/6 rotation step for manual PID stepping
     private static final double COUNTS_PER_SLOT = COUNTS_PER_REV / 6.0;
     private static final double BIGCOUNTS_PER_SLOT = (int)(COUNTS_PER_REV / 3.0);
+
+    public char[] ppg = {'P', 'P', 'G'};
+    public char[] pgp = {'P', 'G', 'P'};
+    public char[] gpp = {'G', 'P', 'P'};
 
     // The actual six slot encoder positions
     private final int[] positions = {
@@ -31,6 +40,9 @@ public class Spindex extends SubsystemBase {
 
     // Track which of the six indexes you're on
     private int currentIndex = 0;
+    private int tagID = 0;
+
+    private boolean hasMotif;
 
     // PID for manual fine movement
     private PIDController spindexPID = new PIDController(0.0003207, 0.00, 0.0000141);
@@ -152,6 +164,48 @@ public class Spindex extends SubsystemBase {
 
         pidTarget -= 40;
     }
+
+
+    public void motif(Spindex spindex, Kicker kicker, OuttakeColorSensor outtakeCD) {
+
+        if (!hasMotif) {
+
+            new EmptyChamberCommand(kicker, spindex, outtakeCD);
+
+        } else if (tagID == 21 && hasMotif) {
+            new MotifCommand(spindex, kicker, outtakeCD, gpp);
+
+
+        } else if (tagID == 22 && hasMotif) {
+
+            new MotifCommand(spindex, kicker, outtakeCD, pgp);
+
+        } else if (tagID == 23 && hasMotif) {
+
+            new MotifCommand(spindex, kicker, outtakeCD, ppg);
+
+
+        }
+
+
+    }
+
+    public void tagIDgetter(int tagID) {
+
+        this.tagID = tagID;
+
+
+
+
+    }
+
+
+    public boolean motifPossible(int purpleBalls, int greenBalls) {
+
+        hasMotif = ((purpleBalls == 2) && (greenBalls == 1));
+        return hasMotif;
+    }
+
 }
 
 

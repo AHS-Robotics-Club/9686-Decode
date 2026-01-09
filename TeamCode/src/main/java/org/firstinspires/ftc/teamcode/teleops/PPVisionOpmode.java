@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleops;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 
 import com.arcrobotics.ftclib.command.CommandOpMode;
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 //import com.bylazar.configurables.PanelsConfigurables;
@@ -55,6 +56,9 @@ public class PPVisionOpmode extends CommandOpMode {
     private boolean motifIDdetected = false;
 
     private boolean lastGreen, lastPurple;
+
+    private boolean hasMotif;
+    private boolean wasCalled = false;
 
     private NanoTimer cycleTimer;
 
@@ -163,6 +167,10 @@ public class PPVisionOpmode extends CommandOpMode {
         driverPad = new GamepadEx(gamepad1);
         gunnerPad = new GamepadEx(gamepad2);
 
+        hasMotif = (numGreenBalls == 1) && (numPurpleBalls == 2);
+
+        turret.setDefaultCommand(new AlwaysTrackCommand(turret, limelight));
+
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
             kicker.down();
             spindex.stepForward();
@@ -186,6 +194,20 @@ public class PPVisionOpmode extends CommandOpMode {
             intake.cycle();
         });
 
+        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT)
+                .whenPressed(() -> scheduleMotif());
+
+
+
+//        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(() -> {
+//
+//            spindex.motif(spindex, kicker, outtakeColor);
+//                });
+
+
+
+
+
         driverPad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new TimedKickCommand(kicker));
 
 
@@ -203,13 +225,18 @@ public class PPVisionOpmode extends CommandOpMode {
         register(kicker);
         register(limelight);
         register(turret, limelight);
-      //  register(outtakeColor);
+      register(outtakeColor);
         register(intakeCD);
     }
 
     @Override
     public void run() {
         super.run();
+
+        spindex.tagIDgetter(tagID);
+        spindex.motifPossible(numPurpleBalls, numGreenBalls);
+
+        hasMotif = (numGreenBalls == 1) && (numPurpleBalls == 2);
 
         totalBalls = numGreenBalls + numPurpleBalls;
 
@@ -240,22 +267,17 @@ public class PPVisionOpmode extends CommandOpMode {
         telemetry.addData("Has LL", hasLL);
 
 
-        turret.setDefaultCommand(new AlwaysTrackCommand(turret, limelight));
+
 
         if (gamepad1.options) {
             imu.resetYaw();
         }
 
         if (gamepad1.dpad_up) intake.expel();
-        if (gamepad1.dpad_right) turret.spinRight();
-        else if (gamepad1.dpad_left) turret.spinLeft();
-        else turret.stop();
 
         if (gamepad1.right_bumper) {
-
             spindex.fineRight();
         } else if (gamepad1.left_bumper) {
-
             spindex.fineLeft();
         }
 
@@ -263,11 +285,7 @@ public class PPVisionOpmode extends CommandOpMode {
         // Pipeline switching
 
         if (gamepad1.y) {
-
-
-
             limelight.switchPipelineRed();
-
         }
 
         if (gamepad1.b) {
@@ -275,16 +293,34 @@ public class PPVisionOpmode extends CommandOpMode {
         }
 
 
-
-
-
-
         if (gamepad1.left_trigger != 0) {
-
             isShooting = true;
         } else if (gamepad1.left_trigger == 0) {
             isShooting = false;
         }
+
+
+
+//        if (tagID == 21 && hasMotif && !wasCalled) {
+//            motif = gpp;
+//            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, gpp));
+//         //   driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(() -> new MotifCommand(spindex, kicker, outtakeColor, gpp)));
+//            wasCalled = true;
+//        } else if (tagID == 22 && hasMotif && !wasCalled) {
+//            motif = pgp;
+//  //          driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(() -> new MotifCommand(spindex, kicker, outtakeColor, pgp)));
+//            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, pgp));
+//            wasCalled = true;
+//        } else if (tagID == 23 && hasMotif && !wasCalled) {
+//            motif = ppg;
+// //           driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(() -> new MotifCommand(spindex, kicker, outtakeColor, ppg)));
+//           driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, ppg));
+//            wasCalled = true;
+//        } else {
+// //           driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(() -> new EmptyChamberCommand(kicker, spindex, outtakeColor)));
+//           driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new EmptyChamberCommand(kicker, spindex, outtakeColor));
+//            wasCalled = true;
+//        }
 
         updateIntakeFSM();
 
@@ -302,16 +338,16 @@ public class PPVisionOpmode extends CommandOpMode {
 
             flywheel.farZone((double)gamepad1.left_trigger, totalBalls, result.getTa());
 
-            if (hasLL) {
-                turret.autoAim(result.getTx());
-            } else {
-                if (gamepad1.dpad_right) turret.spinRight();
-                else if (gamepad1.dpad_left) turret.spinLeft();
-                else turret.stop();
-            }
-        } else {
-            // If result is null, stop the turret for safety/no target
-            turret.stop();
+//            if (hasLL) {
+//                turret.autoAim(result.getTx());
+//            } else {
+//                if (gamepad1.dpad_right) turret.spinRight();
+//                else if (gamepad1.dpad_left) turret.spinLeft();
+//                else turret.stop();
+//            }
+//        } else {
+//            // If result is null, stop the turret for safety/no target
+//            turret.stop();
         }
 
 
@@ -374,16 +410,8 @@ public class PPVisionOpmode extends CommandOpMode {
 
 
 
-        if (tagID == 21) {
-            motif = gpp;
-            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, gpp));
-        } else if (tagID == 22) {
-            motif = pgp;
-            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, pgp));
-        } else {
-            motif = ppg;
-            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, ppg));
-        }
+        wasCalled = false;
+
 
 
 
@@ -417,6 +445,7 @@ public class PPVisionOpmode extends CommandOpMode {
         telemetry.addData("Total Balls", totalBalls);
         telemetry.addData("G Balls", numGreenBalls);
         telemetry.addData("P Balls", numPurpleBalls);
+        telemetry.addData("Has Motif", hasMotif);
 
 
 
@@ -432,59 +461,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
     }
 
-//    public void emptyChamber() {
-//
-//        // if a ball is detected in the intake threshhold, the ball is not aligned in outtake, so step by 60 degs.
-//
-//        boolean shot1 = false;
-//        boolean shot2 = false;
-//        boolean shot3 = false;
-//
-//        boolean hasBalls = totalBalls > 0;
-//
-//
-//        if (intakeCD.getDistance() < RobotConstraints.INTAKE_BALL_CHAMBERED_DISTANCE) spindex.stepForward();
-//
-//
-//        if (hasBalls) {
-//            kicker.kick();
-//            kicker.down();
-//            shot1 = true;
-//
-//            totalBalls--;
-//
-//            spindex.bigStepForward();
-//            transferTimer.resetTimer();
-//        }
-//
-//        if (transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME && shot1 && hasBalls) {
-//        kicker.kick();
-//        kicker.down();
-//
-//        totalBalls--;
-//
-//        spindex.bigStepForward();
-//        transferTimer.resetTimer();
-//
-//        shot2 = true;
-//        }
-//
-//        if (transferTimer.getElapsedTime() > RobotConstraints.SPINDEX_120_DEG_ROT_TIME && shot2 && hasBalls) {
-//            kicker.kick();
-//            kicker.down();
-//
-//            totalBalls--;
-//
-//            spindex.bigStepForward();
-//            transferTimer.resetTimer();
-//
-//            shot3 = true;
-//        }
-//
-//
-//
-//
-//    }
+
 
 
     public void colorTelemetry() {
@@ -582,6 +559,28 @@ public class PPVisionOpmode extends CommandOpMode {
     private int totalBalls() {
         return numGreenBalls + numPurpleBalls;
     }
+
+    private void scheduleMotif() {
+        if (!hasMotif) {
+            schedule(new EmptyChamberCommand(kicker, spindex, outtakeColor));
+            return;
+        }
+
+        switch (tagID) {
+            case 21:
+                schedule(new MotifCommand(spindex, kicker, outtakeColor, gpp));
+                break;
+            case 22:
+                schedule(new MotifCommand(spindex, kicker, outtakeColor, pgp));
+                break;
+            case 23:
+                schedule(new MotifCommand(spindex, kicker, outtakeColor, ppg));
+                break;
+            default:
+                schedule(new EmptyChamberCommand(kicker, spindex, outtakeColor));
+        }
+    }
+
 
 
 

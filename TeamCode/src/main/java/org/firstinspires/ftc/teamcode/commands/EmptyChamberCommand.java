@@ -20,9 +20,11 @@ public class EmptyChamberCommand extends SequentialCommandGroup {
 
         addCommands(
                 new CheckOuttakeAlignmentCommand(spindex, outtakeCD),
-                new WaitCommand(2),
+
+
                 new TimedKickCommand(kicker),
-                new WaitCommand(2),
+
+
                 new TimedBigStepCommand(spindex),
 
                 new TimedKickCommand(kicker),

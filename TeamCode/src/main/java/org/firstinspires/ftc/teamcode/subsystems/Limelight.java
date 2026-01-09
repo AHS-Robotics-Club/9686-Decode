@@ -68,5 +68,5 @@ public class Limelight extends SubsystemBase {
         limelight.pipelineSwitch(1);
     }
 
-    public void switchMotifDetection() {limelight.pipelineSwitch(2); }
+    public void switchMotifDetection() { limelight.pipelineSwitch(2); }
 }
