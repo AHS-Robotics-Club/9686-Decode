@@ -109,9 +109,20 @@ public class Spindex extends SubsystemBase {
     }
 
     public void stepBackward() {
-        pidTarget = spindexMtr.getCurrentPosition() - (int)COUNTS_PER_SLOT;
-        spindexMtr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        pidTarget = -spindexMtr.getCurrentPosition() + (int)COUNTS_PER_SLOT;
+
+        pidTarget -= (int)COUNTS_PER_SLOT;
+
     }
+
+    public void bigStepBackward() {
+//        pidTarget = -spindexMtr.getCurrentPosition() + (int)BIGCOUNTS_PER_SLOT;
+
+        pidTarget -= (int)BIGCOUNTS_PER_SLOT;
+
+    }
+
+
 
     @Override
     public void periodic() {

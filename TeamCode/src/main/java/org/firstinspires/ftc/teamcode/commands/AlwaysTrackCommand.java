@@ -22,6 +22,8 @@ public class AlwaysTrackCommand extends CommandBase {
         if (limelight.hasTarget()) {
             // If we see a tag, use your P-Controller to aim
             turret.autoAim(limelight.getTx());
+        } else {
+            turret.stop();
         }
     }
 

@@ -35,10 +35,10 @@ public class ForwardAuton extends LinearOpMode {
 
         // === Drive forward ===
         double power = 0.4  ; // Adjust speed as needed
-        frontLeftMotor.setPower(-power);
+        frontLeftMotor.setPower(power);
         backLeftMotor.setPower(power);
         frontRightMotor.setPower(power);
-        backRightMotor.setPower(-power);
+        backRightMotor.setPower(power);
 
         sleep(2000); // 1 second
 

@@ -169,7 +169,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
         hasMotif = (numGreenBalls == 1) && (numPurpleBalls == 2);
 
-        turret.setDefaultCommand(new AlwaysTrackCommand(turret, limelight));
+//        turret.setDefaultCommand(new AlwaysTrackCommand(turret, limelight));
 
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
             kicker.down();
@@ -258,7 +258,7 @@ public class PPVisionOpmode extends CommandOpMode {
 //        double flypwr = gamepad2.left_stick_y * -0.85;
 
 
-        follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, false);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         follower.update();
 
         LLResult result = limelight.getRawResult();
@@ -338,9 +338,9 @@ public class PPVisionOpmode extends CommandOpMode {
 
             flywheel.farZone((double)gamepad1.left_trigger, totalBalls, result.getTa());
 
-//            if (hasLL) {
-//                turret.autoAim(result.getTx());
-//            } else {
+            if (hasLL) {
+                turret.autoAim(result.getTx());
+            } else turret.stop();
 //                if (gamepad1.dpad_right) turret.spinRight();
 //                else if (gamepad1.dpad_left) turret.spinLeft();
 //                else turret.stop();
@@ -349,6 +349,8 @@ public class PPVisionOpmode extends CommandOpMode {
 //            // If result is null, stop the turret for safety/no target
 //            turret.stop();
         }
+
+
 
 
 
@@ -399,6 +401,7 @@ public class PPVisionOpmode extends CommandOpMode {
                         tagID = fiducial.getFiducialId();
 
                         motifIDdetected = true;
+                        limelight.switchPipelineRed();
 
                     }
                 }
@@ -423,6 +426,7 @@ public class PPVisionOpmode extends CommandOpMode {
             telemetry.addData("tx", result.getTx());
             telemetry.addData("ty", result.getTy());
             telemetry.addData("ta", result.getTa());
+            telemetry.addData("hasLL", hasLL);
             // Safe check for getBotpose() as well
             telemetry.addData("Botpose", result.getBotpose() != null ? result.getBotpose().toString() : "N/A");
         } else {

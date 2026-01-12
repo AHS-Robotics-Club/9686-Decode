@@ -6,14 +6,14 @@ public class RobotConstraints {
 
             //these are in millis, used for timing capability FIND!
 
-    SPINDEX_120_DEG_ROT_TIME = 350, //550
+    SPINDEX_120_DEG_ROT_TIME = 250, //550
 
-    SPINDEX_120_DEG_COLOR_STAB_TIME = 450,
+    SPINDEX_120_DEG_COLOR_STAB_TIME = 300,
     SPINDEX_60_DEG_ROT_TIME = 250, //300
 
     INTAKE_CD_READING_TIME = 50,
             OUTTAKE_CD_READING_TIME = 75,
-    KICKER_KICK_TIME = 100, //200
+    KICKER_KICK_TIME = 95, //200
     KICKER_DOWN_TIME = 75,
 
     //200

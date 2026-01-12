@@ -12,7 +12,7 @@ public class Turret extends SubsystemBase {
     // --- TUNING ---
 
     // KP: Lowered slightly to reduce the "springiness" / wobble
-    private static final double KP = 0.0310;
+    private static final double KP = 0.0150;
 
     // MIN_POWER: CRITICAL FIX.
     // 0.14 was likely too high, causing it to jump past the target.
@@ -24,7 +24,7 @@ public class Turret extends SubsystemBase {
 
     // DEADBAND: Kept at 1.0 degree.
     // If it still oscillates, increase this to 1.5.
-    private static final double DEADBAND = 1.0;
+    private static final double DEADBAND = 0.6;
 
     public Turret(HardwareMap hardwareMap) {
         turret = hardwareMap.get(DcMotorEx.class, "turret");
