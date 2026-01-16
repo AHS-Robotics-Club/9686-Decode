@@ -15,6 +15,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import org.firstinspires.ftc.teamcode.commands.AlwaysTrackCommand;
 import org.firstinspires.ftc.teamcode.commands.EmptyChamberCommand;
@@ -38,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp(name = "Nice Vision Test Op Mode")
 public class PPVisionOpmode extends CommandOpMode {
-
 
     private GamepadEx driverPad, gunnerPad;
     private Spindex spindex;
@@ -64,8 +64,6 @@ public class PPVisionOpmode extends CommandOpMode {
 
     private IMU imu;
 
-
-
     private OuttakeColorSensor outtakeColor;
 
     private IntakeColorSensor intakeCD;
@@ -88,12 +86,10 @@ public class PPVisionOpmode extends CommandOpMode {
 
     private NanoTimer intakeTimer = new NanoTimer();
 
-    public char[] ppg = {'P', 'P', 'G'};
-    public char[] pgp = {'P', 'G', 'P'};
-    public char[] gpp = {'G', 'P', 'P'};
-    public char[] motif = {};
-
-
+    public char[] ppg = { 'P', 'P', 'G' };
+    public char[] pgp = { 'P', 'G', 'P' };
+    public char[] gpp = { 'G', 'P', 'P' };
+    public char[] motif = { 'P', 'P', 'G' };
 
     /* ===================== Shoot FSM ===================== */
     private enum ShootState {
@@ -135,19 +131,19 @@ public class PPVisionOpmode extends CommandOpMode {
         follower.startTeleopDrive();
         follower.update();
 
-//        limelight = hardwareMap.get(Limelight3A.class, "limelight");
-//        telemetry.setMsTransmissionInterval(11);
-//        limelight.setPollRateHz(100);
-//        limelight.pipelineSwitch(0);
-//        limelight.start();
-
+        // limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        // telemetry.setMsTransmissionInterval(11);
+        // limelight.setPollRateHz(100);
+        // limelight.pipelineSwitch(0);
+        // limelight.start();
 
         imu = hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
-        // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
+        // Without this, the REV Hub's orientation is assumed to be logo up / USB
+        // forward
         imu.initialize(parameters);
 
         limelight = new Limelight(hardwareMap);
@@ -169,7 +165,7 @@ public class PPVisionOpmode extends CommandOpMode {
 
         hasMotif = (numGreenBalls == 1) && (numPurpleBalls == 2);
 
-//        turret.setDefaultCommand(new AlwaysTrackCommand(turret, limelight));
+        // turret.setDefaultCommand(new AlwaysTrackCommand(turret, limelight));
 
         driverPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(() -> {
             kicker.down();
@@ -197,25 +193,15 @@ public class PPVisionOpmode extends CommandOpMode {
         driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT)
                 .whenPressed(() -> scheduleMotif());
 
-
-
-//        driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(() -> {
-//
-//            spindex.motif(spindex, kicker, outtakeColor);
-//                });
-
-
-
-
+        // driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(() -> {
+        //
+        // spindex.motif(spindex, kicker, outtakeColor);
+        // });
 
         driverPad.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(new TimedKickCommand(kicker));
 
-
         gunnerPad.getGamepadButton(GamepadKeys.Button.A).whenPressed(kicker::kick);
         gunnerPad.getGamepadButton(GamepadKeys.Button.B).whenPressed(kicker::down);
-
-
-
 
         register(flywheel);
         register(spindex);
@@ -225,7 +211,7 @@ public class PPVisionOpmode extends CommandOpMode {
         register(kicker);
         register(limelight);
         register(turret, limelight);
-      register(outtakeColor);
+        register(outtakeColor);
         register(intakeCD);
     }
 
@@ -247,18 +233,13 @@ public class PPVisionOpmode extends CommandOpMode {
         boolean isGreen = ballPresent && intakeCD.getGreen() > 0.0145;
         boolean isPurple = ballPresent && !isGreen;
 
-
         boolean counting = false;
         boolean pendingGreen = false;
         boolean pendingPurple = false;
 
+        // double flypwr = gamepad2.left_stick_y * -0.85;
 
-
-
-//        double flypwr = gamepad2.left_stick_y * -0.85;
-
-
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
         follower.update();
 
         LLResult result = limelight.getRawResult();
@@ -266,21 +247,18 @@ public class PPVisionOpmode extends CommandOpMode {
         boolean hasLL = limelight.hasTarget();
         telemetry.addData("Has LL", hasLL);
 
-
-
-
         if (gamepad1.options) {
             imu.resetYaw();
         }
 
-        if (gamepad1.dpad_up) intake.expel();
+        if (gamepad1.dpad_up)
+            intake.expel();
 
         if (gamepad1.right_bumper) {
             spindex.fineRight();
         } else if (gamepad1.left_bumper) {
             spindex.fineLeft();
         }
-
 
         // Pipeline switching
 
@@ -292,81 +270,81 @@ public class PPVisionOpmode extends CommandOpMode {
             limelight.switchPipelineBlue();
         }
 
-
         if (gamepad1.left_trigger != 0) {
             isShooting = true;
         } else if (gamepad1.left_trigger == 0) {
             isShooting = false;
         }
 
-
-
-//        if (tagID == 21 && hasMotif && !wasCalled) {
-//            motif = gpp;
-//            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, gpp));
-//         //   driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(() -> new MotifCommand(spindex, kicker, outtakeColor, gpp)));
-//            wasCalled = true;
-//        } else if (tagID == 22 && hasMotif && !wasCalled) {
-//            motif = pgp;
-//  //          driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(() -> new MotifCommand(spindex, kicker, outtakeColor, pgp)));
-//            driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, pgp));
-//            wasCalled = true;
-//        } else if (tagID == 23 && hasMotif && !wasCalled) {
-//            motif = ppg;
-// //           driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(() -> new MotifCommand(spindex, kicker, outtakeColor, ppg)));
-//           driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new MotifCommand(spindex, kicker, outtakeColor, ppg));
-//            wasCalled = true;
-//        } else {
-// //           driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new InstantCommand(() -> new EmptyChamberCommand(kicker, spindex, outtakeColor)));
-//           driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new EmptyChamberCommand(kicker, spindex, outtakeColor));
-//            wasCalled = true;
-//        }
+        // if (tagID == 21 && hasMotif && !wasCalled) {
+        // motif = gpp;
+        // driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new
+        // MotifCommand(spindex, kicker, outtakeColor, gpp));
+        // // driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new
+        // InstantCommand(() -> new MotifCommand(spindex, kicker, outtakeColor, gpp)));
+        // wasCalled = true;
+        // } else if (tagID == 22 && hasMotif && !wasCalled) {
+        // motif = pgp;
+        // // driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new
+        // InstantCommand(() -> new MotifCommand(spindex, kicker, outtakeColor, pgp)));
+        // driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new
+        // MotifCommand(spindex, kicker, outtakeColor, pgp));
+        // wasCalled = true;
+        // } else if (tagID == 23 && hasMotif && !wasCalled) {
+        // motif = ppg;
+        // // driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new
+        // InstantCommand(() -> new MotifCommand(spindex, kicker, outtakeColor, ppg)));
+        // driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new
+        // MotifCommand(spindex, kicker, outtakeColor, ppg));
+        // wasCalled = true;
+        // } else {
+        // // driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new
+        // InstantCommand(() -> new EmptyChamberCommand(kicker, spindex,
+        // outtakeColor)));
+        // driverPad.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(new
+        // EmptyChamberCommand(kicker, spindex, outtakeColor));
+        // wasCalled = true;
+        // }
 
         updateIntakeFSM();
 
-
         flywheel.flyWheelVelo(gamepad1.left_trigger, totalBalls);
-
-
-
-
-
-
-
 
         if (result != null) {
 
-            flywheel.farZone((double)gamepad1.left_trigger, totalBalls, result.getTa());
+            flywheel.farZone((double) gamepad1.left_trigger, totalBalls, result.getTa());
 
-            if (hasLL) {
-                turret.autoAim(result.getTx());
-            } else turret.stop();
-//                if (gamepad1.dpad_right) turret.spinRight();
-//                else if (gamepad1.dpad_left) turret.spinLeft();
-//                else turret.stop();
-//            }
-//        } else {
-//            // If result is null, stop the turret for safety/no target
-//            turret.stop();
+            // Turret needs heading velocity for Feedforward
+            double headingVel = imu.getRobotAngularVelocity(AngleUnit.DEGREES).zRotationRate;
+            double robotHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+            double tx = (result != null) ? result.getTx() : 0;
+
+            // Update Turret (Handlers Tracking + Search Mode)
+            turret.update(hasLL, tx, headingVel, robotHeading);
+
+            // if (gamepad1.dpad_right) turret.spinRight();
+            // else if (gamepad1.dpad_left) turret.spinLeft();
+            // else turret.stop();
+            // }
+            // } else {
+            // // If result is null, stop the turret for safety/no target
+            // turret.stop();
         }
 
+        // Hoodlime (Manual Control)
+        if (gamepad2.dpad_up)
+            hood.spinUp();
+        else if (gamepad2.dpad_down)
+            hood.spinDown();
+        else
+            hood.stop();
 
+        // Kicker (Manual Control)
+        // if (gamepad2.a) kicker.kick();
+        // else kicker.down();
 
-
-
-
-// Hoodlime (Manual Control)
-        if (gamepad2.dpad_up) hood.spinUp();
-        else if (gamepad2.dpad_down) hood.spinDown();
-        else hood.stop();
-
-// Kicker (Manual Control)
-//        if (gamepad2.a) kicker.kick();
-//        else kicker.down();
-
-
-//        if (gamepad1.right_trigger != 0) kicker.kick();
-//        else kicker.down();
+        // if (gamepad1.right_trigger != 0) kicker.kick();
+        // else kicker.down();
 
         if (gamepad1.left_trigger != 0 && gamepad1.dpad_left && totalBalls > 0) {
 
@@ -377,15 +355,13 @@ public class PPVisionOpmode extends CommandOpMode {
 
         if (hasLL && result != null) {
 
-
             telemetry.addData("Pipeline Index", result.getPipelineIndex());
             telemetry.addData("LL VALID", true);
             telemetry.addData("tx", result.getTx());
             telemetry.addData("ty", result.getTy());
             telemetry.addData("ta", result.getTa());
 
-            List<LLResultTypes.FiducialResult> fiducials =
-                    result.getFiducialResults();
+            List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
 
             if (!fiducials.isEmpty()) {
                 for (LLResultTypes.FiducialResult fiducial : fiducials) {
@@ -394,8 +370,7 @@ public class PPVisionOpmode extends CommandOpMode {
                             "ID: %d | Tx: %.2f | Ty: %.2f",
                             fiducial.getFiducialId(),
                             result.getTx(),
-                            result.getTy()
-                    );
+                            result.getTy());
 
                     if (!motifIDdetected) {
                         tagID = fiducial.getFiducialId();
@@ -411,17 +386,12 @@ public class PPVisionOpmode extends CommandOpMode {
 
         }
 
-
-
         wasCalled = false;
 
-
-
-
-// Limelight Telemetry (Safely Checked)
+        // Limelight Telemetry (Safely Checked)
         if (hasLL && result != null) {
             telemetry.addData("Pipeline Index", result.getPipelineIndex());
-//            telemetry.addData("Apriltag ID", fiducials.get);
+            // telemetry.addData("Apriltag ID", fiducials.get);
             telemetry.addData("LL VALID", true);
             telemetry.addData("tx", result.getTx());
             telemetry.addData("ty", result.getTy());
@@ -436,13 +406,11 @@ public class PPVisionOpmode extends CommandOpMode {
             }
         }
 
-// Spindex Telemetry
+        // Spindex Telemetry
         telemetry.addData("Spindex Encoder", spindex.getCurrentPos());
         telemetry.addData("Target Spindex Position", spindex.getPidTarget());
         // telemetry.addData("Flypower", flypwr);
         telemetry.addData("Velocity", flywheel.getVelocity());
-
-
 
         telemetry.addData("tagID", tagID);
         telemetry.addData("Motif based on obelisk", motif);
@@ -451,22 +419,13 @@ public class PPVisionOpmode extends CommandOpMode {
         telemetry.addData("P Balls", numPurpleBalls);
         telemetry.addData("Has Motif", hasMotif);
 
-
-
-        //Color Sensors
-
+        // Color Sensors
 
         colorTelemetry();
 
-
         telemetry.update();
 
-
-
     }
-
-
-
 
     public void colorTelemetry() {
         telemetry.addData("Intake Red", intakeCD.getRed());
@@ -478,8 +437,6 @@ public class PPVisionOpmode extends CommandOpMode {
         telemetry.addData("Intake Value", intakeCD.getVals());
 
         telemetry.addData("Intake Distance", intakeCD.getDistance());
-
-
 
         telemetry.addData("Outtake Red", outtakeColor.getRed());
         telemetry.addData("Outtake Blue", outtakeColor.getBlue());
@@ -495,9 +452,9 @@ public class PPVisionOpmode extends CommandOpMode {
 
     }
 
-
     private void updateIntakeFSM() {
-        if (isShooting) return; // BLOCK intake while shooting
+        if (isShooting)
+            return; // BLOCK intake while shooting
 
         double distance = intakeCD.getDistance();
         double hue = intakeCD.getHue();
@@ -509,14 +466,11 @@ public class PPVisionOpmode extends CommandOpMode {
             case IDLE:
                 if (ballPresent && totalBalls() < 3) {
 
-
                     readingTimer.resetTimer();
                     intakeState = IntakeState.READING;
 
-
                 }
                 break;
-
 
             case READING:
 
@@ -527,14 +481,11 @@ public class PPVisionOpmode extends CommandOpMode {
                     spindex.bigStepForward();
                     cycleTimer.resetTimer();
 
-
                     intakeState = PPVisionOpmode.IntakeState.INDEXING;
 
                 }
 
                 break;
-
-
 
             case INDEXING:
                 if (cycleTimer.getElapsedTime() >= RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
@@ -543,8 +494,10 @@ public class PPVisionOpmode extends CommandOpMode {
                 break;
 
             case CONFIRM:
-                if (pendingGreen) numGreenBalls++;
-                if (pendingPurple) numPurpleBalls++;
+                if (pendingGreen)
+                    numGreenBalls++;
+                if (pendingPurple)
+                    numPurpleBalls++;
 
                 pendingGreen = false;
                 pendingPurple = false;
@@ -584,9 +537,5 @@ public class PPVisionOpmode extends CommandOpMode {
                 schedule(new EmptyChamberCommand(kicker, spindex, outtakeColor));
         }
     }
-
-
-
-
 
 }
