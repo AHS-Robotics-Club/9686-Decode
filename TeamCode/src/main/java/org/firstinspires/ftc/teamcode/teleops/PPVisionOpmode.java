@@ -328,6 +328,11 @@ public class PPVisionOpmode extends CommandOpMode {
         flywheel.flyWheelVelo(gamepad1.left_trigger, totalBalls);
 
 
+        if (gamepad2.dpad_right) {
+            turret.spinRight();
+        } else if (gamepad2.dpad_left) {
+            turret.spinLeft();
+        } else turret.stop();
 
 
 
@@ -338,9 +343,11 @@ public class PPVisionOpmode extends CommandOpMode {
 
             flywheel.farZone((double)gamepad1.left_trigger, totalBalls, result.getTa());
 
-            if (hasLL) {
-                turret.autoAim(result.getTx());
-            } else turret.stop();
+//            if (hasLL) {
+//                turret.autoAim(result.getTx());
+//            } else turret.stop();
+
+
 //                if (gamepad1.dpad_right) turret.spinRight();
 //                else if (gamepad1.dpad_left) turret.spinLeft();
 //                else turret.stop();

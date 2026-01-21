@@ -28,29 +28,24 @@ public class Flywheel extends SubsystemBase {
 
 
 
-    private PIDFController flyPIDF = new PIDFController(.04, 0, .0001, 0.000008);
+    private PIDFController flyPIDF = new PIDFController(.4, 0, .000000001, 0.00000);
 
     public Flywheel(HardwareMap hardwareMap) {
 
         flywheel = hardwareMap.get(DcMotorEx.class, "fly");
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        flywheel.setDirection(DcMotorSimple.Direction.FORWARD);
+        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     @Override
     public void periodic() {
-        // Always apply whatever power we currently want
-       // flywheel.setPower(commandedPower);
-
 
         currentVeloTicks = flywheel.getVelocity();
-        output = flyPIDF.calculate(-currentVeloTicks, targetVeloTicks);
+        output = flyPIDF.calculate(currentVeloTicks, targetVeloTicks);
 
         flywheel.setPower(output);
-
-
 
 
     }

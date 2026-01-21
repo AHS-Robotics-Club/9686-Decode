@@ -70,7 +70,7 @@ public class SpindexPidTuningOpMode extends CommandOpMode {
         pidTarget = spindex.getPidTarget();
 
         // Calculate the PID error
-        int error = pidTarget - currentPosition;
+        int error = Math.abs(pidTarget) - Math.abs(currentPosition);
 
         // Send the PID constants and the error to the telemetry
 
@@ -78,7 +78,7 @@ public class SpindexPidTuningOpMode extends CommandOpMode {
         packet.put("PID kP", kP);
         packet.put("PID kI", kI);
         packet.put("PID kD", kD);
-        packet.put("Current Position", -currentPosition);
+        packet.put("Current Position", currentPosition);
         packet.put("Target Position", pidTarget);
         packet.put("Error", error);
         dash.sendTelemetryPacket(packet);

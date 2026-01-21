@@ -60,7 +60,7 @@ public class ShooterVelocityTest extends CommandOpMode {
 
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        flywheel.setDirection(DcMotorSimple.Direction.FORWARD);
+        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         dash = FtcDashboard.getInstance();
@@ -99,12 +99,12 @@ public class ShooterVelocityTest extends CommandOpMode {
         flyPIDF.setPIDF(kP, kI, kD, kF);
 
 
-        output = flyPIDF.calculate(-currentVeloTicks, targetVeloTicks);
+        output = flyPIDF.calculate(currentVeloTicks, targetVeloTicks);
 
         flywheel.setPower(output);
 
 
-        error = targetVeloTicks - currentVeloTicks;
+        error = Math.abs(targetVeloTicks) - Math.abs(currentVeloTicks);
 
 
 
@@ -126,7 +126,7 @@ public class ShooterVelocityTest extends CommandOpMode {
         packet.put("PID kP", kP);
         packet.put("PID kI", kI);
         packet.put("PID kD", kD);
-        packet.put("Current Velo", -currentVeloTicks);
+        packet.put("Current Velo", currentVeloTicks);
         packet.put("Target Velo", targetVeloTicks);
         packet.put("Error", error);
         dash.sendTelemetryPacket(packet);

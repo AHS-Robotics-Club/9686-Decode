@@ -24,6 +24,8 @@ public class Spindex extends SubsystemBase {
     private static final double COUNTS_PER_SLOT = COUNTS_PER_REV / 6.0;
     private static final double BIGCOUNTS_PER_SLOT = (int)(COUNTS_PER_REV / 3.0);
 
+    private static final double COUNTS_PER_180 = (int)(COUNTS_PER_REV / 2.0);
+
     public char[] ppg = {'P', 'P', 'G'};
     public char[] pgp = {'P', 'G', 'P'};
     public char[] gpp = {'G', 'P', 'P'};
@@ -56,7 +58,7 @@ public class Spindex extends SubsystemBase {
         spindexMtr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Keep forward direction predictable
-        spindexMtr.setDirection(DcMotorSimple.Direction.REVERSE);
+        spindexMtr.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
     // -------------------------
@@ -122,13 +124,25 @@ public class Spindex extends SubsystemBase {
 
     }
 
+    public void invertForward () {
+
+        pidTarget += (int)COUNTS_PER_180;
+
+    }
+
+    public void invertBackward () {
+
+        pidTarget -= (int)COUNTS_PER_180;
+
+    }
+
 
 
     @Override
     public void periodic() {
 
-        double current = -spindexMtr.getCurrentPosition();
-        double power = spindexPID.calculate(current, pidTarget);
+        double current = spindexMtr.getCurrentPosition();
+        double power = spindexPID.calculate(-current, pidTarget);
         spindexMtr.setPower(power);
 
     }
@@ -145,6 +159,8 @@ public class Spindex extends SubsystemBase {
     public void stop() {
         spindexMtr.setPower(0);
     }
+
+
 
     // -------------------------
     // TELEMETRY
