@@ -45,7 +45,7 @@ public class Flywheel extends SubsystemBase {
         currentVeloTicks = flywheel.getVelocity();
         output = flyPIDF.calculate(currentVeloTicks, targetVeloTicks);
 
-        flywheel.setPower(output);
+        flywheel.setPower(-output);
 
 
     }
