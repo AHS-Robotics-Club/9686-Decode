@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -15,14 +16,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(12)
-            .forwardZeroPowerAcceleration(-32.8)
-            .lateralZeroPowerAcceleration(-78.12);
-
+            .mass(12.247)
+            .forwardZeroPowerAcceleration(-54.9)
+            .lateralZeroPowerAcceleration(-89.212)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.078, 0, 0.01, 0.061))
+            .headingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.035, 0.0025));
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(-3.75)
-            .strafePodX(8.5)
+            .forwardPodY(-4.5)
+            .strafePodX(-3.75)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
@@ -34,8 +36,8 @@ public class Constants {
             .rightRearMotorName("bR")
             .leftRearMotorName("bL")
             .leftFrontMotorName("fL")
-            .xVelocity(73.443)
-            .yVelocity(93.288)
+            .xVelocity(70.302)
+            .yVelocity(54.912)
             .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
