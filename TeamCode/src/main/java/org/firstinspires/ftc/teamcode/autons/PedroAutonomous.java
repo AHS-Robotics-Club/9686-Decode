@@ -31,7 +31,7 @@ public class PedroAutonomous extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(122, 125, Math.toRadians(38)));
 
         paths = new Paths(follower); // Build paths
         pathTimer = new NanoTimer();
