@@ -1,12 +1,31 @@
 
 package org.firstinspires.ftc.teamcode.autons;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
+
+import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.pedropathing.util.NanoTimer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.bylazar.telemetry.PanelsTelemetry;
+
+import org.firstinspires.ftc.teamcode.commands.MotifCommand;
+import org.firstinspires.ftc.teamcode.commands.MotifFSM;
+import org.firstinspires.ftc.teamcode.commands.SimpleShootFSM;
+import org.firstinspires.ftc.teamcode.constants.RobotConstraints;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+import org.firstinspires.ftc.teamcode.subsystems.Hood;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.IntakeColorSensor;
+import org.firstinspires.ftc.teamcode.subsystems.Kicker;
+import org.firstinspires.ftc.teamcode.subsystems.Limelight;
+import org.firstinspires.ftc.teamcode.subsystems.OuttakeColorSensor;
+import org.firstinspires.ftc.teamcode.subsystems.Spindex;
+import org.firstinspires.ftc.teamcode.subsystems.Turret;
+import org.firstinspires.ftc.teamcode.teleops.PPVisionOpmode;
+
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.follower.Follower;
@@ -14,18 +33,70 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.NanoTimer;
 
+import java.util.concurrent.TimeUnit;
+
 @Autonomous(name = "Pedro testington", group = "Autonomous")
 @Configurable // Panels
-public class UpdatedPedro extends OpMode {
+public class UpdatedPedro extends CommandOpMode {
+
+    private MotifFSM motifFSM;
+    private SimpleShootFSM simpleShootFSM;
+
+    private enum IntakeState {
+        IDLE,
+        READING,
+        INDEXING,
+        CONFIRM,
+        WAIT_CLEAR
+    }
+
+    public char[] ppg = { 'P', 'P', 'G' };
+    public char[] pgp = { 'P', 'G', 'P' };
+    public char[] gpp = { 'G', 'P', 'P' };
+
+    private boolean isShooting = false;
+
+    private UpdatedPedro.IntakeState intakeState = UpdatedPedro.IntakeState.IDLE;
+
+    private boolean pendingGreen = false;
+    private boolean pendingPurple = false;
+
+    private boolean scheduled = false;
+
+    private int numGreenBalls = 0;
+    private int numPurpleBalls = 0;
+
+    private int totalBalls = 0;
+
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
     private int pathState = 0; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
 
+    private Turret turret;
+
+    private Spindex spindex;
+
+    private Limelight limelight;
+    private Intake intake;
+    private Kicker kicker;
+    private Flywheel flywheel;
+    private Hood hood;
+    private IntakeColorSensor intakeCD;
+    private OuttakeColorSensor outtakeColor;
+
+    private NanoTimer cycleTimer = new NanoTimer();
+    private NanoTimer readingTimer  = new NanoTimer();
+
     private NanoTimer pathTimer = new NanoTimer();
 
+    public static Pose endingPose;
+
     @Override
-    public void init() {
+    public void initialize() {
+
+
+
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         follower = Constants.createFollower(hardwareMap);
@@ -35,12 +106,50 @@ public class UpdatedPedro extends OpMode {
 
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);
+
+        limelight = new Limelight(hardwareMap);
+
+        spindex = new Spindex(hardwareMap);
+        intake = new Intake(hardwareMap);
+        kicker = new Kicker(hardwareMap);
+        turret = new Turret(hardwareMap);
+        flywheel = new Flywheel(hardwareMap);
+        hood = new Hood(hardwareMap);
+        intakeCD = new IntakeColorSensor(hardwareMap);
+        outtakeColor = new OuttakeColorSensor(hardwareMap);
+
+        cycleTimer = new NanoTimer();
+        readingTimer = new NanoTimer();
+
+        register(flywheel);
+        register(spindex);
+        register(intake);
+        register(turret);
+        register(hood);
+        register(kicker);
+        register(limelight);
+        register(turret, limelight);
+        register(outtakeColor);
+        register(intakeCD);
+
+
+        motifFSM = new MotifFSM(spindex, kicker, outtakeColor);
+        simpleShootFSM = new SimpleShootFSM(spindex, kicker, 3, intakeCD);
     }
 
     @Override
-    public void loop() {
+    public void run() {
+        totalBalls = numGreenBalls + numPurpleBalls;
+        turret.poseGetter(follower.getPose());
+
+        flywheel.setTargetVeloTicks(-1275);
+        super.run();
+        updateIntakeFSM();
+        motifFSM.update();
+        simpleShootFSM.update();
         follower.update(); // Update Pedro Pathing
         pathState = autonomousPathUpdate(); // Update autonomous state machine
+
 
         // Log values to Panels and Driver Station
         panelsTelemetry.debug("Path State", pathState);
@@ -136,35 +245,86 @@ public class UpdatedPedro extends OpMode {
 
 
 
+
+
+
+
+
+
     public int autonomousPathUpdate() {
         switch (pathState) {
 
             case 0:
                 // Start Path 1
                 follower.followPath(paths.Path1);
-                setPathState(1);
+
+                    setPathState(1);
+
                 break;
 
             case 1:
                 if (!follower.isBusy()) {
-                    follower.followPath(paths.line2);
-                    setPathState(2);
+
+                    if (!scheduled) {
+
+                        simpleShootFSM.start();
+
+                        isShooting = true;
+
+                        scheduled = true;
+
+                    }
+
+
+                    if (pathTimer.getElapsedTime(TimeUnit.MILLISECONDS) > 5000) {
+                        follower.followPath(paths.line2);
+                        setPathState(2);
+                        isShooting = false;
+                        scheduled = false;
+                        totalBalls = 0;
+                        numGreenBalls = 0;
+                        numPurpleBalls = 0;
+                        spindex.stepForward();
+
+
+                    }
                 }
                 break;
 
             case 2:
                 if (!follower.isBusy()) {
-                    follower.followPath(paths.line3);
+                    follower.followPath(paths.line3, 0.35, true);
                     setPathState(3);
                 }
                 break;
 
             case 3:
                 if (!follower.isBusy()) {
-                    follower.followPath(paths.line4);
-                    setPathState(4);
+
+                    if (!scheduled) {
+
+                        simpleShootFSM.start();
+
+                        isShooting = true;
+
+                        scheduled = true;
+
+                    }
+
+
+                    if (pathTimer.getElapsedTime(TimeUnit.MILLISECONDS) > 4000) {
+                        follower.followPath(paths.line4);
+                        setPathState(4);
+                        isShooting = false;
+                        scheduled = false;
+                        totalBalls = 0;
+                        numGreenBalls = 0;
+                        numPurpleBalls = 0;
+                        spindex.stepForward();
+
+
+                    }
                 }
-                break;
 
             case 4:
                 if (!follower.isBusy()) {
@@ -175,7 +335,7 @@ public class UpdatedPedro extends OpMode {
 
             case 5:
                 if (!follower.isBusy()) {
-                    follower.followPath(paths.line6);
+                    follower.followPath(paths.line6, 0.35, true);
                     setPathState(6);
                 }
                 break;
@@ -184,6 +344,11 @@ public class UpdatedPedro extends OpMode {
                 if (!follower.isBusy()) {
                     follower.followPath(paths.line7);
                     setPathState(7);
+
+                    if (!follower.isBusy()) {
+
+                        RobotConstraints.teleOpStartPose = follower.getPose();
+                    }
                 }
                 break;
 
@@ -192,6 +357,72 @@ public class UpdatedPedro extends OpMode {
 
         return pathState;
     }
+
+    private void updateIntakeFSM() {
+        if (isShooting)
+            return; // BLOCK intake while shooting
+
+        double distance = intakeCD.getDistance();
+        double hue = intakeCD.getHue();
+
+        boolean ballPresent = distance > 5 && distance < RobotConstraints.INTAKE_BALL_CHAMBERED_DISTANCE;
+        boolean isGreen = ballPresent && hue < RobotConstraints.OUTTAKE_GREEN_BALL_HUE_THRESH;
+
+        switch (intakeState) {
+            case IDLE:
+                if (ballPresent && totalBalls() < 3) {
+
+                    readingTimer.resetTimer();
+                    intakeState = UpdatedPedro.IntakeState.READING;
+
+                }
+                break;
+
+            case READING:
+
+                pendingGreen = isGreen;
+                pendingPurple = !isGreen;
+
+                if (readingTimer.getElapsedTime(TimeUnit.MILLISECONDS) >= RobotConstraints.INTAKE_CD_READING_TIME) {
+                    spindex.bigStepForward();
+                    cycleTimer.resetTimer();
+
+                    intakeState = UpdatedPedro.IntakeState.INDEXING;
+
+                }
+
+                break;
+
+            case INDEXING:
+                if (cycleTimer.getElapsedTime() >= RobotConstraints.SPINDEX_120_DEG_ROT_TIME) {
+                    intakeState = UpdatedPedro.IntakeState.CONFIRM;
+                }
+                break;
+
+            case CONFIRM:
+                if (pendingGreen)
+                    numGreenBalls++;
+                if (pendingPurple)
+                    numPurpleBalls++;
+
+                pendingGreen = false;
+                pendingPurple = false;
+
+                intakeState = UpdatedPedro.IntakeState.WAIT_CLEAR;
+                break;
+
+            case WAIT_CLEAR:
+                if (!ballPresent) {
+                    intakeState = UpdatedPedro.IntakeState.IDLE;
+                }
+                break;
+        }
+    }
+
+    private int totalBalls() {
+        return numGreenBalls + numPurpleBalls;
+    }
+
 
     public void setPathState(int pState) {
 

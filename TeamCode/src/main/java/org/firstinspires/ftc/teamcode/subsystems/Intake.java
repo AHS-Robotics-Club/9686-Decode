@@ -27,7 +27,7 @@ public class Intake extends SubsystemBase {
     public void periodic() {
 
 
-        intake.setPower(0.6);
+        intake.setPower(0.8);
 
 
     }

@@ -12,7 +12,7 @@ public class Flywheel extends SubsystemBase {
     private final DcMotorEx flywheel;
     private double commandedPower = -0.4;   // default idle power
 
-    private final double CLOSE_ZONE_TICKS = -1275;
+    private final double CLOSE_ZONE_TICKS = -1300;
     private final double FAR_ZONE_TICKS = -1500;
 
     private final double AMBIENT_TICKS = -800;
@@ -28,7 +28,7 @@ public class Flywheel extends SubsystemBase {
 
 
 
-    private PIDFController flyPIDF = new PIDFController(.4, 0, .000000001, 0.00000);
+    private PIDFController flyPIDF = new PIDFController(.00455, 0, .00000000, 0.00000);
 
     public Flywheel(HardwareMap hardwareMap) {
 
@@ -45,7 +45,7 @@ public class Flywheel extends SubsystemBase {
         currentVeloTicks = flywheel.getVelocity();
         output = flyPIDF.calculate(currentVeloTicks, targetVeloTicks);
 
-        flywheel.setPower(-output);
+        flywheel.setPower(output);
 
 
     }

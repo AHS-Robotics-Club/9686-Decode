@@ -78,7 +78,7 @@ public class LimelightPIDTest extends CommandOpMode {
         double robotHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         double tx = hasTarget ? limelight.getTx() : 0;
 
-        turret.update(hasTarget, tx, headingVel, robotHeading);
+
 
         packet.put("Mode", hasTarget ? "Tracking" : "Searching");
         /* ================= Telemetry ================= */

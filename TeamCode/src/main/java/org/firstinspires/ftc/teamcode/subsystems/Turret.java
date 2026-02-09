@@ -3,13 +3,23 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.acmerobotics.dashboard.config.Config;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.teamcode.constants.RobotConstraints;
 
 public class Turret extends SubsystemBase {
 
     private final DcMotorEx turret;
+    private final int COUNTS_PER_REVOLUTION = 1180;
+    private double visionOutput;
+
+    private double adjustment;
+
+//    private float position = 0;
 
     // --- TUNING ---
     // Make these public static so Dashboard can see them
@@ -34,13 +44,41 @@ public class Turret extends SubsystemBase {
         // Soft Limits (Ticks) - Calibrate these!
         public static int MAX_TICKS = 1500; // Approx 180 degrees right
         public static int MIN_TICKS = -1500; // Approx 180 degrees left
+
+
+
+
     }
 
-    private PIDController controller;
+    private PIDController turretPID = new PIDController(0.01,0,0.0000001);
+
+    private PIDController limelightPID = new PIDController(0.015, 0, 0.0000001);
+
+    private double limelightTx = 0.0;
+    private boolean hasVisionTarget = false;
 
     private double lastTx = 0;
     private double lastTargetFieldHeading = 0;
     private boolean hasLastKnown = false;
+
+    double output = 0;
+    double angle = 0;
+    double position = 0;
+    double currentEncoderTicks = 0;
+
+    private double goalDisplacementX = 0;
+    private double goalDisplacementY = 0;
+
+    private Pose currPose = new Pose(0, 0, 0);
+
+    private Pose targetPose = new Pose(49, 58, Math.toRadians(90));
+
+
+    public static double rightAngleLimit = 100;
+
+    public static double leftAngleLimit = -120;
+
+
 
     public Turret(HardwareMap hardwareMap) {
         turret = hardwareMap.get(DcMotorEx.class, "turret");
@@ -48,102 +86,17 @@ public class Turret extends SubsystemBase {
 
         // Reset Encoders on Init so we know where 0 is (Assuming Front Facing)
         turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Initialize PID
-        controller = new PIDController(TurretParams.kP, TurretParams.kI, TurretParams.kD);
+//        controller = new PIDController(TurretParams.kP, TurretParams.kI, TurretParams.kD);
     }
 
-    /**
-     * Updates the turret state. Safe to call every loop.
-     * 
-     * @param hasTarget    Whether the Limelight currently sees a target.
-     * @param tx           The horizontal offset from Limelight (degrees).
-     * @param headingVel   The angular velocity of the robot (degrees/sec) from IMU
-     * @param robotHeading The absolute heading of the robot (degrees) from IMU
-     */
-    public void update(boolean hasTarget, double tx, double headingVel, double robotHeading) {
 
-        double currentTicks = turret.getCurrentPosition();
-        double turretHeading = ticksToDegrees(currentTicks);
-
-        double power = 0;
-
-        // Recalculate TicksPerDegree just in case Dashboard changed TicksPerRev
-        TurretParams.TICKS_PER_DEGREE = (TurretParams.TICKS_PER_REV * TurretParams.GEAR_RATIO) / 360.0;
-
-        if (hasTarget) {
-            // ================== VISUAL TRACKING ==================
-            // 1. Calculate Field-Centric Angle of Target
-            // FieldHeading = RobotHeading + TurretAngle + VisionError
-            lastTargetFieldHeading = robotHeading + turretHeading + tx;
-            hasLastKnown = true;
-
-            // 2. Filter Vision Data
-            double filteredTx = (TurretParams.FILTER_ALPHA * tx) + ((1 - TurretParams.FILTER_ALPHA) * lastTx);
-            lastTx = filteredTx;
-
-            // 3. Visual PID (Lock onto tx=0)
-            controller.setPID(TurretParams.kP, TurretParams.kI, TurretParams.kD);
-            double pidOut = controller.calculate(0, filteredTx);
-
-            // 4. Chassis Feedforward (Counter-act robot spin)
-            // If robot spins RIGHT (+Velocity), Feedforward should push LEFT (-)
-            double ff = -headingVel * TurretParams.kHeading;
-
-            power = pidOut + ff;
-
-        } else if (hasLastKnown) {
-            // ================== MEMORY TRACKING (Field Centric) ==================
-            // We want TurretHeading to be: TargetFieldHeading - RobotHeading
-            double targetTurretHeading = lastTargetFieldHeading - robotHeading;
-
-            // FLIP LOGIC / WRAP AROUND (Simple Version)
-            // If we are commanding > 180 degrees (e.g. 190),
-            // the wire might be safer at -170 if limits allow.
-
-            // For now, just a P-Controller on the angle error
-            double errorDegrees = targetTurretHeading - turretHeading;
-
-            // Normalize error to shortest path?
-            // No, because of wires, we don't always want shortest path if it crosses the
-            // back.
-            // Be VERY careful here.
-
-            // Simple Position P-Control
-            double holdKp = 0.03;
-            power = errorDegrees * holdKp;
-
-        } else {
-            power = 0;
-        }
-
-        // Static Friction Kick
-        if (Math.abs(power) > 0.001) {
-            power += Math.signum(power) * TurretParams.kStatic;
-        }
-
-        // Clamp
-        power = Math.max(-TurretParams.MAX_POWER, Math.min(TurretParams.MAX_POWER, power));
-
-        // Soft Limits Check
-        if (power > 0 && currentTicks > TurretParams.MAX_TICKS) {
-            power = 0;
-        } else if (power < 0 && currentTicks < TurretParams.MIN_TICKS) {
-            power = 0;
-        }
-
-        turret.setPower(power);
-    }
 
     // Overload for legacy calls or stationary testing without IMU
-    public void update(boolean hasTarget, double tx, double headingVel) {
-        update(hasTarget, tx, headingVel, 0.0);
-    }
 
-    public void update(boolean hasTarget, double tx) {
-        update(hasTarget, tx, 0.0);
-    }
+
 
     private double ticksToDegrees(double ticks) {
         return ticks / TurretParams.TICKS_PER_DEGREE;
@@ -170,4 +123,147 @@ public class Turret extends SubsystemBase {
 
     public void spinRight() {}
     public void spinLeft() {}
+
+
+
+    public float getAngle() {
+
+        return (((turret.getCurrentPosition()/(float)(COUNTS_PER_REVOLUTION)) * 360) % 360);
+
+    }
+
+
+    public int getPosition() {
+
+        return turret.getCurrentPosition();
+
+    }
+
+
+    public void poseGetter(Pose robotPose) {
+
+        currPose = robotPose;
+
+
+
+
+    }
+
+    public void updateVision(double tx, boolean hasTarget) {
+        limelightTx = tx;
+        hasVisionTarget = hasTarget;
+    }
+
+
+    public void displacementCalc() {
+
+        goalDisplacementX = Math.abs((targetPose.getX()) - currPose.getX());
+        goalDisplacementY = Math.abs((targetPose.getY()) - currPose.getY());
+
+    }
+
+    public double targetRotation() {
+
+        return position;
+
+
+    }
+
+    public void setTargetPoseToMotif() {
+
+        targetPose = RobotConstraints.motifPose;
+
+
+    }
+
+    public void setTargetPoseToRed() {
+
+        targetPose = RobotConstraints.redGoal;
+
+
+
+
+    }
+
+    public void fineRight() {
+        double currX = targetPose.getX();
+        double currY = targetPose.getY();
+        double currHeading = targetPose.getHeading();
+
+//        targetPose = new Pose(currX + 1, currY - 1, currHeading);
+
+        adjustment += 1.5;
+    }
+
+    public void fineLeft() {
+        double currX = targetPose.getX();
+        double currY = targetPose.getY();
+        double currHeading = targetPose.getHeading();
+
+//        targetPose = new Pose(currX - 1, currY -1, currHeading);
+
+        adjustment -= 1.5;
+    }
+
+    public void setTargetPoseToBlue() {
+
+        targetPose = RobotConstraints.blueGoal;
+
+
+    }
+
+
+
+
+
+
+
+    public void periodic() {
+
+
+
+        if (currPose == null) return;
+
+        currentEncoderTicks = turret.getCurrentPosition();
+
+        angle = (((((currentEncoderTicks/(double)(COUNTS_PER_REVOLUTION)) * 360))));
+
+        displacementCalc();
+
+        position = Math.toDegrees(Math.atan2(goalDisplacementY, goalDisplacementX)) - Math.toDegrees(currPose.getHeading());
+
+        if (angle > rightAngleLimit) {
+            angle += 360;
+
+
+//            if (angle < leftAngleLimit) {
+//
+//                angle = leftAngleLimit;
+//            }
+        }
+
+        if (angle < leftAngleLimit) {
+            angle -= 360;
+
+
+//            if (angle > rightAngleLimit) {
+//
+//                angle = rightAngleLimit;
+//            }
+        }
+
+        if (hasVisionTarget) {
+            // Optional: low-pass filter the tx to smooth jitter
+            // Limelight PID: positive tx means target is right, so turret should move right
+            visionOutput = Range.clip(-limelightPID.calculate(0, limelightTx), -0.8, 0.8 ); // target=0, measurement=tx
+        } else visionOutput = 0.0;
+
+        output = turretPID.calculate(angle, Range.clip(-position + adjustment, leftAngleLimit, rightAngleLimit));
+
+        turret.setPower(output + visionOutput);
+
+
+
+
+    }
 }
